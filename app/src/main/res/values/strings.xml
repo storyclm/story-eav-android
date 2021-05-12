@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">AttributesApp</string>
+
+    <string name="main_error">Ошибка</string>
+    <string name="main_retry">Повторить</string>
+    <string name="main_show_content">Показать контент</string>
 </resources>
