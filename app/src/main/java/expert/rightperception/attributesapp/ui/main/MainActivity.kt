@@ -19,12 +19,16 @@ class MainActivity : InjectableActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        main_retry_btn.setOnClickListener {
+            viewModel.retry()
+        }
+
         viewModel.uiStateLiveData.observe(this, { uiState ->
             main_content_layout.isVisible = uiState is Content
             main_loading_layout.isVisible = uiState == Loading
             main_error_layout.isVisible = uiState == Error
         })
 
-        viewModel.start()
+        viewModel.getData()
     }
 }

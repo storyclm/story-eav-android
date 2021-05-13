@@ -29,7 +29,7 @@ class MainViewModel @Inject constructor(
         .asStateFlow()
         .asLiveData()
 
-    fun start() {
+    fun getData() {
         viewModelScope.launch {
             if (passwordlessAuthHandler.isAuthenticated()) {
                 uiState.value = getContent()
@@ -47,6 +47,11 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun retry() {
+        uiState.value = Loading
+        getData()
     }
 
     private suspend fun getContent(): MainUiState  {
