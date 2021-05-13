@@ -1,6 +1,5 @@
 package expert.rightperception.attributesapp.ui.main
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
@@ -57,7 +56,6 @@ class MainViewModel @Inject constructor(
     private suspend fun getContent(): MainUiState  {
         val content = contentInteractor.getContent()
         return if (content != null) {
-            Log.e("DBG_", "${content}")
             Data(content)
         } else{
             Error

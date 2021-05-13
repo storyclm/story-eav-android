@@ -10,7 +10,6 @@ import ru.breffi.story.domain.interactors.ClientInteractor
 import ru.breffi.story.domain.interactors.PresentationContentInteractor
 import ru.breffi.story.domain.interactors.PresentationInteractor
 import ru.breffi.story.domain.models.PresentationEntity
-import ru.breffi.story.domain.models.download.DownloadStatus
 import javax.inject.Inject
 
 class ContentInteractor @Inject constructor(
@@ -39,41 +38,40 @@ class ContentInteractor @Inject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-            var presentation: PresentationEntity? = presentationInteractor.getPresentation(PRESENTATION_ID)
-                .blockingFirst()
-                .orElseGet { null }
-            if (presentation?.withContent == true && !presentation.isNeedUpdate) {
-                val injectionScript = getInjectionScript()
-                if (injectionScript != null) {
-                    ContentModel(presentation, injectionScript)
-                } else {
-                    null
-                }
-            } else {
-                presentationContentInteractor.getOrUpdatePresentationContent(PRESENTATION_ID, true)
-                val result = presentationContentInteractor.listenDownloadFinish(listOf(PRESENTATION_ID)).blockingGet()
-                if (result.getOrNull(0)?.status == DownloadStatus.FINISHED) {
-                    presentation = presentationInteractor.getPresentation(PRESENTATION_ID)
-                        .blockingFirst()
-                        .orElseGet { null }
-                    if (presentation?.withContent == true && !presentation.isNeedUpdate) {
-                        val injectionScript = getInjectionScript()
-                        if (injectionScript != null) {
-                            ContentModel(presentation, injectionScript)
-                        } else {
-                            null
-                        }
+            var presentation: PresentationEntity? = getPresentation()
+            when {
+                presentation == null -> null
+                presentation.withContent && !presentation.isNeedUpdate -> getContentModel(presentation)
+                else -> {
+                    try {
+                        presentationContentInteractor.getOrUpdatePresentationContent(PRESENTATION_ID, true)
+                        presentationContentInteractor.listenDownloadFinish(listOf(PRESENTATION_ID)).blockingGet()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                    presentation = getPresentation()
+                    if (presentation?.withContent == true) {
+                        getContentModel(presentation)
                     } else {
                         null
                     }
-                } else {
-                    null
                 }
             }
         }
     }
 
-    private suspend fun getInjectionScript(): String? {
-        return injectionRepository.getInjectionScript()
+    private suspend fun getContentModel(presentation: PresentationEntity): ContentModel? {
+        val injectionScript = injectionRepository.getInjectionScript()
+        return if (injectionScript != null) {
+            ContentModel(presentation, injectionScript)
+        } else {
+            null
+        }
+    }
+
+    private fun getPresentation(): PresentationEntity? {
+        return presentationInteractor.getPresentation(PRESENTATION_ID)
+            .blockingFirst()
+            .orElseGet { null }
     }
 }
