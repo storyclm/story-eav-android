@@ -12,7 +12,7 @@ import javax.inject.Singleton
 class InjectionRepository @Inject constructor() {
 
     companion object {
-        private const val INJECTION_SCRIPT_URL = "https://gist.githubusercontent.com/demkonst/caf5343319272b24116935167ceef579/raw/context.js"
+        private const val INJECTION_SCRIPT_URL = "https://pastebin.com/raw/V5FfUV2m"
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")

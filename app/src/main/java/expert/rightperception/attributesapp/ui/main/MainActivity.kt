@@ -2,9 +2,11 @@ package expert.rightperception.attributesapp.ui.main
 
 import android.os.Bundle
 import androidx.core.view.isVisible
+import com.google.android.material.tabs.TabLayoutMediator
 import expert.rightperception.attributesapp.R
 import expert.rightperception.attributesapp.ui.common.InjectableActivity
-import expert.rightperception.attributesapp.ui.main.model.Content
+import expert.rightperception.attributesapp.ui.main.adapter.MainAdapter
+import expert.rightperception.attributesapp.ui.main.model.Data
 import expert.rightperception.attributesapp.ui.main.model.Error
 import expert.rightperception.attributesapp.ui.main.model.Loading
 import kotlinx.android.synthetic.main.activity_main.*
@@ -24,9 +26,16 @@ class MainActivity : InjectableActivity() {
         }
 
         viewModel.uiStateLiveData.observe(this, { uiState ->
-            main_content_layout.isVisible = uiState is Content
+            main_content_layout.isVisible = uiState is Data
             main_loading_layout.isVisible = uiState == Loading
             main_error_layout.isVisible = uiState == Error
+
+            if (uiState is Data) {
+                main_pager.adapter = MainAdapter(this, uiState.contentModel)
+                TabLayoutMediator(main_tab_layout, main_pager) { tab, position ->
+                    tab.text = getString(if (position == 0) R.string.main_tab_content else R.string.main_tab_configurator)
+                }.attach()
+            }
         })
 
         viewModel.getData()

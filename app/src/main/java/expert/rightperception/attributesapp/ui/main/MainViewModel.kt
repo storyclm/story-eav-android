@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import expert.rightperception.attributesapp.domain.interactor.ContentInteractor
-import expert.rightperception.attributesapp.ui.main.model.Content
+import expert.rightperception.attributesapp.ui.main.model.Data
 import expert.rightperception.attributesapp.ui.main.model.Error
 import expert.rightperception.attributesapp.ui.main.model.Loading
 import expert.rightperception.attributesapp.ui.main.model.MainUiState
@@ -58,7 +58,7 @@ class MainViewModel @Inject constructor(
         val content = contentInteractor.getContent()
         return if (content != null) {
             Log.e("DBG_", "${content}")
-            Content(listOf())
+            Data(content)
         } else{
             Error
         }

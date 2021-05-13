@@ -13,19 +13,29 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/main_attributes_rv"
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/main_tab_layout"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_height="wrap_content" />
 
-        <Button
-            android:id="@+id/main_show_content_btn"
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/main_pager"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:text="@string/main_show_content"
-            android:textAllCaps="false" />
+            android:layout_height="match_parent" />
+
+<!--        <androidx.recyclerview.widget.RecyclerView-->
+<!--            android:id="@+id/main_attributes_rv"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="0dp"-->
+<!--            android:layout_weight="1" />-->
+
+<!--        <Button-->
+<!--            android:id="@+id/main_show_content_btn"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_margin="16dp"-->
+<!--            android:text="@string/main_show_content"-->
+<!--            android:textAllCaps="false" />-->
 
     </LinearLayout>
 

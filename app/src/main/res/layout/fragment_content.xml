@@ -1,0 +1,56 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/rootView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:focusable="true"
+        android:keepScreenOn="true">
+
+    <WebView
+            android:id="@+id/contentView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    <ImageView
+            android:id="@+id/media_button"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:padding="5dp"
+            android:src="@drawable/ic_phone_media"
+            android:visibility="gone" />
+
+    <ru.breffi.story.domain.bridge.module.MapImageButton
+            android:id="@+id/map_button"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_toEndOf="@id/media_button"
+            android:padding="5dp"
+            android:src="@drawable/ic_map"
+            android:visibility="gone" />
+
+    <ImageView
+            android:id="@+id/close_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/ic_btn_close"
+            android:visibility="gone" />
+
+    <Button
+        android:id="@+id/actionBtn"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:padding="5dp"
+        android:text="call"
+        android:visibility="visible"/>
+
+</RelativeLayout>
