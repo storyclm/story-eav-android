@@ -44,10 +44,6 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
         }
     }
 
-    private class Story() {
-        var app = "hello"
-    }
-
     @Inject
     lateinit var viewModel: ContentViewModel
 
@@ -160,7 +156,7 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
 
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                 return if (request.url.toString().contains(".html")) {
-                    val obj = "var story = ${storyObject};\n"
+                    val obj = if (storyObject.isEmpty()) "" else "var story = ${storyObject};\n"
                     val text = "<script id=\"context_injection_script\" type=\"text/javascript\">$obj$script\ndocument.getElementById('context_injection_script').remove();</script>" + File(request.url.toString().replace("file://", "")).readText()
                     WebResourceResponse("text/html", "UTF-8", text.byteInputStream())
                 } else {
