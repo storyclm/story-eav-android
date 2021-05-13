@@ -3,8 +3,9 @@
 
     <string name="main_error">Ошибка</string>
     <string name="main_retry">Повторить</string>
-    <string name="main_show_content">Показать контент</string>
 
     <string name="main_tab_configurator">Конфигуратор</string>
     <string name="main_tab_content">Контент</string>
+
+    <string name="configurator_save">Сохранить</string>
 </resources>

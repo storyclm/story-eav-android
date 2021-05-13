@@ -7,10 +7,9 @@ import android.view.*
 import android.webkit.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GestureDetectorCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.google.gson.Gson
 import expert.rightperception.attributesapp.R
+import expert.rightperception.attributesapp.ui.common.InjectableFragment
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_content.*
 import kotlinx.coroutines.Job
@@ -23,9 +22,10 @@ import ru.breffi.story.domain.bridge.model.CloseMode
 import ru.breffi.story.domain.bridge.model.SessionData
 import ru.breffi.story.util.setSystemUiVisible
 import java.io.File
+import javax.inject.Inject
 
 
-class ContentFragment : Fragment(), ContentView, StoryBridgeView {
+class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
 
     companion object {
         const val TAG = "ContentFragment"
@@ -44,17 +44,12 @@ class ContentFragment : Fragment(), ContentView, StoryBridgeView {
         }
     }
 
-    private class Story {
-
-        var app = "DemoApp"
-
-        var extra = ExtraData()
+    private class Story() {
+        var app = "hello"
     }
 
-    private class ExtraData {
-
-        var version = 1
-    }
+    @Inject
+    lateinit var viewModel: ContentViewModel
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -69,6 +64,7 @@ class ContentFragment : Fragment(), ContentView, StoryBridgeView {
     private var sessionData: SessionData? = null
 
     private var script: String = ""
+    private var storyObject: String = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_content, container, false)
@@ -81,7 +77,10 @@ class ContentFragment : Fragment(), ContentView, StoryBridgeView {
             script = args.getString(INJECTION_SCRIPT, "")
             val id = args.getInt(PRESENTATION_ID, -1)
             if (id != -1) {
-                createBridge(id, sessionData?.sessionId ?: savedInstanceState?.getString(KEY_SESSION_ID))
+                viewModel.getData().observe(viewLifecycleOwner) { objectString ->
+                    storyObject = objectString
+                    createBridge(id, sessionData?.sessionId ?: savedInstanceState?.getString(KEY_SESSION_ID))
+                }
             }
         }
     }
@@ -130,12 +129,6 @@ class ContentFragment : Fragment(), ContentView, StoryBridgeView {
 //        contentView.setOnTouchListener { _, event ->
 //            gestureDetector.onTouchEvent(event)
 //        }
-        actionBtn.setOnClickListener {
-            val updatedStory = Story().apply { extra.version = 99 }
-            contentView.evaluateJavascript("var story = ${Gson().toJson(updatedStory)}") {
-                contentView.loadUrl("javascript:onStoryChange()")
-            }
-        }
         close_button.setOnClickListener { closePresentation(CloseMode.DIALOG) }
     }
 
@@ -157,23 +150,29 @@ class ContentFragment : Fragment(), ContentView, StoryBridgeView {
 
             @JavascriptInterface
             fun changeStory(story: String) {
-                Log.e("DBG_1", "$story")
+                storyObject = story
+                viewModel.updateStoryObject(story)
             }
         }
 
-        var initialized = false
         contentView.addJavascriptInterface(JsObject(), "changeStoryObject")
         contentView.webViewClient = object : WebViewClient() {
 
-
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                 return if (request.url.toString().contains(".html")) {
-                    val obj = if (initialized) "" else "var story = ${Gson().toJson(Story())};\n"
-                    initialized = true
+                    val obj = "var story = ${storyObject};\n"
                     val text = "<script id=\"context_injection_script\" type=\"text/javascript\">$obj$script\ndocument.getElementById('context_injection_script').remove();</script>" + File(request.url.toString().replace("file://", "")).readText()
                     WebResourceResponse("text/html", "UTF-8", text.byteInputStream())
                 } else {
                     null
+                }
+            }
+        }
+        viewModel.storyObjectLiveData.observe(viewLifecycleOwner) { objectString ->
+            if (objectString != storyObject) {
+                storyObject = objectString
+                contentView.evaluateJavascript("var story = ${objectString}") {
+                    contentView.loadUrl("javascript:onStoryChange()")
                 }
             }
         }
