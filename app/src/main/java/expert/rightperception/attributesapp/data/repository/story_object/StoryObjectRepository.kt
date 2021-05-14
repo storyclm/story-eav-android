@@ -31,7 +31,7 @@ class StoryObjectRepository @Inject constructor(context: Context) {
     fun observeObject(): Flow<String> {
         return objectStateFlow
             .onStart {
-                getObject()
+                emit(getObject())
             }
     }
 
