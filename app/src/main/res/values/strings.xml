@@ -7,5 +7,6 @@
     <string name="main_tab_configurator">Конфигуратор</string>
     <string name="main_tab_content">Контент</string>
 
+    <string name="configurator_endpoint">Endpoint</string>
     <string name="configurator_save">Сохранить</string>
 </resources>

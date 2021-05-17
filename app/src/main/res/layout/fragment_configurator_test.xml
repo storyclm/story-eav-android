@@ -7,38 +7,20 @@
     android:orientation="vertical"
     tools:context=".ui.main.MainActivity">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/configurator_rv"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/configurator_endpoint"
-        android:textColor="@color/black"
-        android:textStyle="bold" />
-
     <EditText
         android:id="@+id/configurator_et"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        android:layout_weight="1"
         android:background="@drawable/configurator_edit_background"
         android:gravity="top|start"
-        android:padding="5dp"
-        android:textSize="16sp" />
+        android:padding="5dp" />
 
     <Button
         android:id="@+id/configurator_save_btn"
         android:layout_width="match_parent"
-        android:layout_height="59dp"
+        android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:text="@string/configurator_save"
         android:textAllCaps="false" />

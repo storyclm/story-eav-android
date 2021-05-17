@@ -6,6 +6,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
 import expert.rightperception.attributesapp.ui.configurator.ConfiguratorViewModel
+import expert.rightperception.attributesapp.ui.configurator_test.ConfiguratorTestViewModel
 import expert.rightperception.attributesapp.ui.content.ContentViewModel
 import expert.rightperception.attributesapp.ui.main.MainViewModel
 
@@ -26,6 +27,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(ConfiguratorViewModel::class)
     abstract fun bindConfiguratorViewModel(viewModel: ConfiguratorViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(ConfiguratorTestViewModel::class)
+    abstract fun bindConfiguratorTestViewModel(viewModel: ConfiguratorTestViewModel): ViewModel
 
     @Binds
     abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
