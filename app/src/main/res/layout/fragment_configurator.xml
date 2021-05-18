@@ -7,12 +7,30 @@
     android:orientation="vertical"
     tools:context=".ui.main.MainActivity">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/configurator_rv"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="60dp">
+
+            <include layout="@layout/layout_notes" />
+
+            <include layout="@layout/layout_accent_color" />
+
+            <include layout="@layout/layout_rating" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/configurator_rv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
 
     <TextView
         android:layout_width="wrap_content"

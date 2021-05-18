@@ -9,7 +9,7 @@ import com.moqod.android.recycler.multitype.MultiTypeViewBinder
 import expert.rightperception.attributesapp.R
 import expert.rightperception.attributesapp.ui.configurator.model.AttributeItemUiModel
 
-class ChildAttributeItemViewBinder(@param:NonNull private val listener: Listener) : MultiTypeViewBinder<ChildAttributeItemViewBinder.ViewHolder, AttributeItemUiModel>() {
+class NestedAttributeItemViewBinder(@param:NonNull private val listener: Listener) : MultiTypeViewBinder<NestedAttributeItemViewBinder.ViewHolder, AttributeItemUiModel>() {
 
     interface Listener {
         fun onCityClick(uiModel: AttributeItemUiModel)
@@ -20,7 +20,7 @@ class ChildAttributeItemViewBinder(@param:NonNull private val listener: Listener
     }
 
     override fun onCreateViewHolder(layoutInflater: LayoutInflater, viewGroup: ViewGroup): ViewHolder {
-        val view = layoutInflater.inflate(R.layout.item_attribute, viewGroup, false)
+        val view = layoutInflater.inflate(R.layout.item_nested_attribute, viewGroup, false)
         return ViewHolder(view)
     }
 

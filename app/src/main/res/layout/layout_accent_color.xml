@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.TitleWidget
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="AccentColor" />
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.AttributeWidget
+        android:id="@+id/accentcolor_visibility_aw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:key="accent_color" />
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
+        android:id="@+id/accentcolor_color_naw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:key="color" />
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
+        android:id="@+id/accentcolor_transparent_naw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:key="transparent" />
+
+</LinearLayout>

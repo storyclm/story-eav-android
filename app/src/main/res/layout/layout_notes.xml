@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.TitleWidget
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="Notes" />
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.AttributeWidget
+        android:id="@+id/notes_visibility_aw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:key="notes" />
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
+        android:id="@+id/notes_text_naw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:key="text" />
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
+        android:id="@+id/notes_color_naw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:key="color" />
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
+        android:id="@+id/notes_fontsize_naw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:key="font_size" />
+
+</LinearLayout>

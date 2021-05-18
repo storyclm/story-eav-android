@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.TitleWidget
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="Rating" />
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.AttributeWidget
+        android:id="@+id/rating_visibility_aw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:key="rating" />
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
+        android:id="@+id/rating_color_naw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:key="color" />
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
+        android:id="@+id/rating_quantity_naw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:key="quantity" />
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
+        android:id="@+id/rating_progress_naw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:key="progress" />
+
+</LinearLayout>

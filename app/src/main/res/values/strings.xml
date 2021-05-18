@@ -9,4 +9,8 @@
 
     <string name="configurator_endpoint">Endpoint</string>
     <string name="configurator_save">Сохранить</string>
+    <string name="configurator_item_title_subtitle">Ключ/Значение</string>
+    <string name="configurator_item_title_notes">Notes</string>
+    <string name="configurator_item_title_accent_color">AccentColor</string>
+    <string name="configurator_item_title_rating">Rating</string>
 </resources>

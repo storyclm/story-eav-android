@@ -4,12 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="34dp"
     android:orientation="horizontal"
-    android:paddingStart="16dp"
+    android:paddingStart="33dp"
     android:paddingTop="10dp"
     android:paddingEnd="16dp">
 
     <TextView
-        android:id="@+id/item_attribute_key_tv"
+        android:id="@+id/item_nested_attribute_key_tv"
         style="@style/AttributeKeyStyle"
         android:layout_width="0dp"
         android:layout_height="match_parent"
@@ -21,7 +21,7 @@
         android:layout_height="0dp" />
 
     <TextView
-        android:id="@+id/item_attribute_value_tv"
+        android:id="@+id/item_nested_attribute_value_tv"
         style="@style/AttributeValueStyle"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
