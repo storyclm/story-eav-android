@@ -59,8 +59,14 @@ class StoryObjectRepository @Inject constructor(
     //
 
     fun setAttributesEndpoint(endpoint: String) {
-        preferencesStorage.setAttributesEndpoint(endpoint)
-        storyAttributes = StoryAttributes.create(app, StoryAttributesSettings(preferencesStorage.getAttributesEndpoint()))
+        if (preferencesStorage.getAttributesEndpoint() != endpoint) {
+            preferencesStorage.setAttributesEndpoint(endpoint)
+            storyAttributes = StoryAttributes.create(app, StoryAttributesSettings(endpoint))
+        }
+    }
+
+    fun getAttributesEndpoint(): String {
+        return preferencesStorage.getAttributesEndpoint()
     }
 
     suspend fun setObject(parentId: String, objectsContainer: ObjectsContainer) {

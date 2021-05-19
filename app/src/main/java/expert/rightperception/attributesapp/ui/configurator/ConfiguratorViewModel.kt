@@ -28,8 +28,13 @@ class ConfiguratorViewModel @Inject constructor(
         licenseIdFlow.tryEmit(licenseId)
     }
 
-    fun saveObjects(objectsContainer: ObjectsContainer) {
+    fun getAttributesEndpoint(): String {
+        return storyObjectRepository.getAttributesEndpoint()
+    }
+
+    fun saveObjects(endpoint: String, objectsContainer: ObjectsContainer) {
         viewModelScope.launch {
+            storyObjectRepository.setAttributesEndpoint(endpoint)
             storyObjectRepository.setObject(licenseId, objectsContainer)
         }
     }

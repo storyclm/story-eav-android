@@ -42,6 +42,8 @@ class ConfiguratorFragment : InjectableFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        configurator_endpoint_et.setText(viewModel.getAttributesEndpoint())
+
         arguments?.getString(LICENSE_ID)?.let {  licenseId ->
 
             viewModel.setup(licenseId)
@@ -152,7 +154,7 @@ class ConfiguratorFragment : InjectableFragment() {
             }
 
             configurator_save_btn.setOnClickListener {
-                objects?.let { viewModel.saveObjects(it) }
+                objects?.let { viewModel.saveObjects(configurator_endpoint_et.text.toString(), it) }
             }
         }
     }
