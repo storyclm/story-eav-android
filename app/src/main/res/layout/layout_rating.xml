@@ -20,18 +20,21 @@
         android:id="@+id/rating_color_naw"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:key="color" />
+        app:key="color"
+        app:value_type="color" />
 
     <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
         android:id="@+id/rating_quantity_naw"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:key="quantity" />
+        app:key="quantity"
+        app:value_type="integer" />
 
     <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
         android:id="@+id/rating_progress_naw"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:key="progress" />
+        app:key="progress"
+        app:value_type="integer" />
 
 </LinearLayout>

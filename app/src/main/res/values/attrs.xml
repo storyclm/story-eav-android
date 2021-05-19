@@ -15,6 +15,11 @@
     <declare-styleable name="NestedAttributeWidget">
         <attr name="key" />
         <attr name="nested_attr_value" format="string|reference" />
+        <attr name="value_type" format="enum">
+            <enum name="string" value="0" />
+            <enum name="color" value="1" />
+            <enum name="integer" value="2" />
+        </attr>
     </declare-styleable>
 
 </resources>

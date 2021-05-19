@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
     <expert.rightperception.attributesapp.ui.configurator.widget.TitleWidget
         android:layout_width="match_parent"
@@ -20,12 +20,14 @@
         android:id="@+id/accentcolor_color_naw"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:key="color" />
+        app:key="color"
+        app:value_type="color" />
 
     <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
         android:id="@+id/accentcolor_transparent_naw"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:key="transparent" />
+        app:key="transparent"
+        app:value_type="integer" />
 
 </LinearLayout>

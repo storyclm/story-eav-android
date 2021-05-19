@@ -8,6 +8,7 @@ import android.webkit.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.JsonParser
 import expert.rightperception.attributesapp.R
 import expert.rightperception.attributesapp.ui.common.InjectableFragment
 import io.reactivex.disposables.CompositeDisposable
@@ -146,14 +147,42 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
         WebView.setWebContentsDebuggingEnabled(true)
         class JsObject {
 
+//            @JavascriptInterface
+//            fun changeStory(story: String) {
+//                storyObject = story
+//                viewModel.updateStoryObject(story)
+//            }
+
             @JavascriptInterface
-            fun changeStory(story: String) {
-                storyObject = story
-                viewModel.updateStoryObject(story)
+            fun setStoryProp(keyPath: String, value: String) {
+                Log.e("DBG_", "set $keyPath $value")
+                val json = JsonParser.parseString(storyObject).asJsonObject
+                val keys = listOf("state").plus(keyPath.split("."))
+                val pathKeys = keys.subList(0, keys.size - 1)
+                val setKey = keys.last()
+                pathKeys.fold(json) { acc, key -> acc?.getAsJsonObject(key) }
+                    ?.addProperty(setKey, value)
+                val updatedStory = json.toString()
+                storyObject = updatedStory
+                viewModel.updateStoryObject(updatedStory)
+            }
+
+            @JavascriptInterface
+            fun deleteStoryProp(keyPath: String) {
+                Log.e("DBG_", "delete $keyPath")
+                val json = JsonParser.parseString(storyObject).asJsonObject
+                val keys = listOf("state").plus(keyPath.split("."))
+                val pathKeys = keys.subList(0, keys.size - 1)
+                val deleteKey = keys.last()
+                pathKeys.fold(json) { acc, key -> acc?.getAsJsonObject(key) }
+                    ?.remove(deleteKey)
+                val updatedStory = json.toString()
+                storyObject = updatedStory
+                viewModel.updateStoryObject(updatedStory)
             }
         }
 
-        contentView.addJavascriptInterface(JsObject(), "changeStoryObject")
+        contentView.addJavascriptInterface(JsObject(), "nativeStory")
         contentView.webViewClient = object : WebViewClient() {
 
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {

@@ -20,18 +20,21 @@
         android:id="@+id/notes_text_naw"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:key="text" />
+        app:key="text"
+        app:value_type="string" />
 
     <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
         android:id="@+id/notes_color_naw"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:key="color" />
+        app:key="color"
+        app:value_type="color" />
 
     <expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
         android:id="@+id/notes_fontsize_naw"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:key="font_size" />
+        app:key="font_size"
+        app:value_type="integer" />
 
 </LinearLayout>

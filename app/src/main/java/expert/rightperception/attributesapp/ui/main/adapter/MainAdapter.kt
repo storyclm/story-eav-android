@@ -21,6 +21,7 @@ class MainAdapter(
         return if (position == 0) {
             ContentFragment.newInstance(licenseId, contentModel.presentationEntity.id, contentModel.injectionScript)
         } else {
+//            ConfiguratorTestFragment()
             ConfiguratorFragment.newInstance(licenseId)
         }
     }
