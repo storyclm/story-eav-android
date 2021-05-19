@@ -2,7 +2,6 @@ package expert.rightperception.attributesapp.data.api
 
 import expert.rightperception.attributesapp.BuildConfig
 import expert.rightperception.attributesapp.data.api.model.LicenseDto
-import kotlinx.coroutines.Deferred
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PUT
@@ -17,5 +16,5 @@ interface ExpertApi {
     suspend fun getLicense(): LicenseDto
 
     @PUT("api/license")
-    suspend fun putLicense(@Body license: LicenseDto): Deferred<LicenseDto>
+    suspend fun putLicense(@Body license: LicenseDto): LicenseDto
 }

@@ -1,25 +1,25 @@
 package expert.rightperception.attributesapp.data.api.model
 
-class LicenseDto(
+data class LicenseDto(
 
-    val id: String,
+    val id: String = "",
 
-    val externalId: String?,
+    val externalId: String? = null,
 
-    val paymentId: String?,
+    val paymentId: String? = null,
 
-    val start: String,
+    val start: String = "",
 
-    val finish: String,
+    val finish: String = "",
 
-    val status: String,
+    val status: String = "",
 
-    val createdAt: String?,
+    val createdAt: String? = null,
 
-    val createdBy: String?,
+    val createdBy: String? = null,
 
-    val modifiedAt: String?,
+    val modifiedAt: String? = null,
 
-    val modifiedBy: String?
+    val modifiedBy: String? = null
 
 )

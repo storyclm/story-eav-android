@@ -1,6 +1,5 @@
 package expert.rightperception.attributesapp.di
 
-import android.app.Application
 import android.content.Context
 import com.google.gson.Gson
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
@@ -54,7 +53,8 @@ internal class AppModule {
 
     @Singleton
     @Provides
-    internal fun provideExpertService(client: OkHttpClient, gson: Gson): ExpertApi {
+    internal fun provideExpertService(client: OkHttpClient): ExpertApi {
+        val gson = Gson()
         val retrofit = Retrofit.Builder()
             .baseUrl(ExpertApi.BASE_URL)
             .client(client)
@@ -67,7 +67,7 @@ internal class AppModule {
 
     @Singleton
     @Provides
-    fun provideDatabase(context: Application): AttributesDatabase {
+    fun provideDatabase(context: Context): AttributesDatabase {
         return AttributesDatabase.build(context)
     }
 

@@ -31,12 +31,14 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
         const val TAG = "ContentFragment"
         const val KEY_SESSION_ID = "session_id"
 
+        private const val LICENSE_ID = "LICENSE_ID"
         private const val PRESENTATION_ID = "PRESENTATION_ID"
         private const val INJECTION_SCRIPT = "INJECTION_SCRIPT"
 
-        fun newInstance(presentationId: Int, script: String): ContentFragment {
+        fun newInstance(licenseId: String, presentationId: Int, script: String): ContentFragment {
             return ContentFragment().apply {
                 arguments = Bundle().apply {
+                    putString(LICENSE_ID, licenseId)
                     putInt(PRESENTATION_ID, presentationId)
                     putString(INJECTION_SCRIPT, script)
                 }

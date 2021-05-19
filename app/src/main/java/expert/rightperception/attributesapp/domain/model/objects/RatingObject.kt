@@ -1,12 +1,8 @@
 package expert.rightperception.attributesapp.domain.model.objects
 
-data class RatingContainer(
-    val rating: RatingObject
-)
-
 data class RatingObject(
     val ratingVisible: Boolean,
-    val ratingParameters: RatingParameters
+    val parameters: RatingParameters
 )
 
 data class RatingParameters(

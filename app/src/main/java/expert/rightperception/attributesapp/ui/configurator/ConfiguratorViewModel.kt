@@ -3,33 +3,34 @@ package expert.rightperception.attributesapp.ui.configurator
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import expert.rightperception.attributesapp.App
 import expert.rightperception.attributesapp.data.repository.story_object.StoryObjectRepository
+import expert.rightperception.attributesapp.domain.model.objects.ObjectsContainer
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import ru.rightperception.storyattributes.api.StoryAttributes
-import ru.rightperception.storyattributes.api.model.StoryAttributesSettings
 import javax.inject.Inject
 
 class ConfiguratorViewModel @Inject constructor(
-    private val app: App,
     private val storyObjectRepository: StoryObjectRepository
 ) : ViewModel() {
 
-    private val mutex = Mutex()
+    private lateinit var licenseId: String
+    private val licenseIdFlow = MutableSharedFlow<String>(1)
 
-    private val storyAttributes = StoryAttributes.create(app, StoryAttributesSettings("https://api-staging.rightperception.expert")).getStorageApi()
-
-    val objectString = storyObjectRepository
-        .observeObject()
+    val uiModel = licenseIdFlow
+        .filterNotNull()
+        .flatMapLatest { licenseId -> storyObjectRepository.observeObjects(licenseId) }
         .asLiveData()
 
-    fun saveObject(objectString: String) {
+    fun setup(licenseId: String) {
+        this.licenseId = licenseId
+        licenseIdFlow.tryEmit(licenseId)
+    }
+
+    fun saveObjects(objectsContainer: ObjectsContainer) {
         viewModelScope.launch {
-            mutex.withLock {
-                storyObjectRepository.saveObject(objectString)
-            }
+            storyObjectRepository.setObject(licenseId, objectsContainer)
         }
     }
 }

@@ -13,4 +13,8 @@
     <string name="configurator_item_title_notes">Notes</string>
     <string name="configurator_item_title_accent_color">AccentColor</string>
     <string name="configurator_item_title_rating">Rating</string>
+
+    <string name="dialog_edit_title">Укажите значение</string>
+    <string name="dialog_edit_add">Добавить</string>
+    <string name="dialog_edit_cancel">Отмена</string>
 </resources>
