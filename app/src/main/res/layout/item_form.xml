@@ -45,6 +45,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:key="input_value"
+            app:locked="true"
             app:value_type="string" />
 
     </LinearLayout>

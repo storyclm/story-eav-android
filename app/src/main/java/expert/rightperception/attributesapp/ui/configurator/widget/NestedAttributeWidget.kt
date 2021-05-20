@@ -23,6 +23,7 @@ class NestedAttributeWidget(context: Context, attrs: AttributeSet?) : FrameLayou
     }
 
     var listener: Listener? = null
+    var locked = false
 
     private var valueType: Int = 0
 
@@ -33,45 +34,52 @@ class NestedAttributeWidget(context: Context, attrs: AttributeSet?) : FrameLayou
             val a = context.obtainStyledAttributes(attrs, R.styleable.NestedAttributeWidget, 0, 0)
             item_nested_attribute_key_tv.text = a.getString(R.styleable.NestedAttributeWidget_key)
             valueType = a.getInt(R.styleable.NestedAttributeWidget_value_type, 0)
+            locked = a.getBoolean(R.styleable.NestedAttributeWidget_locked, false)
             a.recycle()
         }
 
-        item_nested_attribute_value_tv.setOnClickListener {
-            val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit, null)
-            val dialog = AlertDialog.Builder(context)
-                .setTitle(R.string.dialog_edit_title)
-                .setView(dialogView)
-                .create()
-            when (valueType) {
-                0 -> {
-                    val filterArray = arrayOfNulls<InputFilter>(1)
-                    filterArray[0] = LengthFilter(100)
-                    dialogView.dialog_edit_et.filters = filterArray
-                }
-                1 -> {
-                    dialogView.dialog_edit_et.addTextChangedListener {
-                        dialogView.dialog_edit_add_btn.isEnabled = Utils.colorRegex.matches(it.toString())
+        if (locked) {
+            item_nested_attribute_value_tv.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_lock_closed, 0)
+            item_nested_attribute_value_tv.setBackgroundResource(R.drawable.bg_item_attr_value_locked)
+            item_nested_attribute_value_tv.setTextColor(context.getColor(R.color.dark_grey))
+        } else {
+            item_nested_attribute_value_tv.setOnClickListener {
+                val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit, null)
+                val dialog = AlertDialog.Builder(context)
+                    .setTitle(R.string.dialog_edit_title)
+                    .setView(dialogView)
+                    .create()
+                when (valueType) {
+                    0 -> {
+                        val filterArray = arrayOfNulls<InputFilter>(1)
+                        filterArray[0] = LengthFilter(100)
+                        dialogView.dialog_edit_et.filters = filterArray
+                    }
+                    1 -> {
+                        dialogView.dialog_edit_et.addTextChangedListener {
+                            dialogView.dialog_edit_add_btn.isEnabled = Utils.colorRegex.matches(it.toString())
+                        }
+                    }
+                    2 -> {
+                        dialogView.dialog_edit_et.inputType = InputType.TYPE_CLASS_NUMBER
+                        val filterArray = arrayOfNulls<InputFilter>(1)
+                        filterArray[0] = LengthFilter(2)
+                        dialogView.dialog_edit_et.filters = filterArray
+                        dialogView.dialog_edit_et.addTextChangedListener {
+                            dialogView.dialog_edit_add_btn.isEnabled = it.toString().isNotEmpty()
+                        }
                     }
                 }
-                2 -> {
-                    dialogView.dialog_edit_et.inputType = InputType.TYPE_CLASS_NUMBER
-                    val filterArray = arrayOfNulls<InputFilter>(1)
-                    filterArray[0] = LengthFilter(2)
-                    dialogView.dialog_edit_et.filters = filterArray
-                    dialogView.dialog_edit_et.addTextChangedListener {
-                        dialogView.dialog_edit_add_btn.isEnabled = it.toString().isNotEmpty()
-                    }
+                dialogView.dialog_edit_et.setText(item_nested_attribute_value_tv.text)
+                dialogView.dialog_edit_cancel_btn.setOnClickListener {
+                    dialog.dismiss()
                 }
+                dialogView.dialog_edit_add_btn.setOnClickListener {
+                    dialog.dismiss()
+                    listener?.onValueSet(dialogView.dialog_edit_et.text.toString())
+                }
+                dialog.show()
             }
-            dialogView.dialog_edit_et.setText(item_nested_attribute_value_tv.text)
-            dialogView.dialog_edit_cancel_btn.setOnClickListener {
-                dialog.dismiss()
-            }
-            dialogView.dialog_edit_add_btn.setOnClickListener {
-                dialog.dismiss()
-                listener?.onValueSet(dialogView.dialog_edit_et.text.toString())
-            }
-            dialog.show()
         }
     }
 

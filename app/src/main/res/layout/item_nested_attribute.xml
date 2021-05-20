@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="34dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:paddingStart="33dp"
     android:paddingTop="10dp"
@@ -25,6 +26,7 @@
         style="@style/AttributeValueStyle"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        app:drawableEndCompat="@drawable/ic_pencil"
         tools:text="value" />
 
 </LinearLayout>

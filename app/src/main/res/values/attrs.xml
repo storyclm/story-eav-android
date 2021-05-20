@@ -20,6 +20,7 @@
             <enum name="color" value="1" />
             <enum name="integer" value="2" />
         </attr>
+        <attr name="locked" format="boolean" />
     </declare-styleable>
 
 </resources>
