@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
+
+        <TextView
+            style="@style/FormAddItemFieldHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="name" />
+
+        <EditText
+            android:id="@+id/dialog_form_add_name_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="top|start"
+            android:textSize="16sp" />
+
+        <TextView
+            style="@style/FormAddItemFieldHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="background_color" />
+
+        <EditText
+            android:id="@+id/dialog_form_add_bg_color_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="top|start"
+            android:textSize="16sp" />
+
+
+        <TextView
+            style="@style/FormAddItemFieldHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="font_color" />
+
+        <EditText
+            android:id="@+id/dialog_form_add_font_color_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="top|start"
+            android:textSize="16sp" />
+
+        <TextView
+            style="@style/FormAddItemFieldHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="font_size" />
+
+        <EditText
+            android:id="@+id/dialog_form_add_font_size_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="top|start"
+            android:textSize="16sp" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/dialog_form_add_cancel_btn"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dialog_edit_cancel"
+            android:textColor="@color/dark_grey" />
+
+        <Button
+            android:id="@+id/dialog_form_add_add_btn"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dialog_edit_add"
+            android:enabled="false"
+            android:textColor="@color/dialog_button_color_selector" />
+
+    </LinearLayout>
+
+</LinearLayout>

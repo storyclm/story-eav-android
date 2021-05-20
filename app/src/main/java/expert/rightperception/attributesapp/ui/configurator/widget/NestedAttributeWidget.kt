@@ -1,20 +1,19 @@
 package expert.rightperception.attributesapp.ui.configurator.widget
 
 import android.content.Context
-import android.text.Editable
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
 import android.text.InputType
-import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
+import androidx.core.widget.addTextChangedListener
 import expert.rightperception.attributesapp.R
+import expert.rightperception.attributesapp.ui.common.Utils
 import kotlinx.android.synthetic.main.dialog_edit.view.*
 import kotlinx.android.synthetic.main.item_nested_attribute.view.*
-import java.util.regex.Pattern
 
 
 class NestedAttributeWidget(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
@@ -26,7 +25,6 @@ class NestedAttributeWidget(context: Context, attrs: AttributeSet?) : FrameLayou
     var listener: Listener? = null
 
     private var valueType: Int = 0
-    private val regex = Pattern.compile("^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})\$").toRegex()
 
     init {
         View.inflate(context, R.layout.item_nested_attribute, this)
@@ -51,25 +49,18 @@ class NestedAttributeWidget(context: Context, attrs: AttributeSet?) : FrameLayou
                     dialogView.dialog_edit_et.filters = filterArray
                 }
                 1 -> {
-                    dialogView.dialog_edit_et.addTextChangedListener(object : TextWatcher {
-
-                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
-                        }
-
-                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                        }
-
-                        override fun afterTextChanged(s: Editable?) {
-                            dialogView.dialog_edit_add_btn.isEnabled = regex.matches(s.toString())
-                        }
-                    })
+                    dialogView.dialog_edit_et.addTextChangedListener {
+                        dialogView.dialog_edit_add_btn.isEnabled = Utils.colorRegex.matches(it.toString())
+                    }
                 }
                 2 -> {
                     dialogView.dialog_edit_et.inputType = InputType.TYPE_CLASS_NUMBER
                     val filterArray = arrayOfNulls<InputFilter>(1)
                     filterArray[0] = LengthFilter(2)
                     dialogView.dialog_edit_et.filters = filterArray
+                    dialogView.dialog_edit_et.addTextChangedListener {
+                        dialogView.dialog_edit_add_btn.isEnabled = it.toString().isNotEmpty()
+                    }
                 }
             }
             dialogView.dialog_edit_et.setText(item_nested_attribute_value_tv.text)
@@ -84,16 +75,11 @@ class NestedAttributeWidget(context: Context, attrs: AttributeSet?) : FrameLayou
         }
     }
 
+    fun setKey(key: String) {
+        item_nested_attribute_key_tv.text = key
+    }
+
     fun setValue(value: String) {
         item_nested_attribute_value_tv.text = value
     }
-
-//    private class ColorFilter : InputFilter {
-//        private val regex = Pattern.compile("^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})\$").toRegex()
-//
-//        override fun filter(source: CharSequence, start: Int, end: Int, dest: Spanned?, dstart: Int, dend: Int): CharSequence {
-//            regex.matches(source)
-//        }
-//
-//    }
 }

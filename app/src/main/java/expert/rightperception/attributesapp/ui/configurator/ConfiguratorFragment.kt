@@ -1,21 +1,32 @@
 package expert.rightperception.attributesapp.ui.configurator
 
 import android.os.Bundle
+import android.text.InputFilter
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
+import androidx.core.widget.addTextChangedListener
+import androidx.recyclerview.widget.LinearLayoutManager
 import expert.rightperception.attributesapp.R
+import expert.rightperception.attributesapp.domain.model.objects.FormItem
 import expert.rightperception.attributesapp.domain.model.objects.ObjectsContainer
 import expert.rightperception.attributesapp.ui.common.InjectableFragment
+import expert.rightperception.attributesapp.ui.common.Utils
+import expert.rightperception.attributesapp.ui.configurator.adapter.FormAdapter
+import expert.rightperception.attributesapp.ui.configurator.model.FormItemUiModel
 import expert.rightperception.attributesapp.ui.configurator.widget.AttributeWidget
 import expert.rightperception.attributesapp.ui.configurator.widget.NestedAttributeWidget
+import kotlinx.android.synthetic.main.dialog_add_form_item.view.*
 import kotlinx.android.synthetic.main.fragment_configurator.*
 import kotlinx.android.synthetic.main.layout_accent_color.*
+import kotlinx.android.synthetic.main.layout_form.*
 import kotlinx.android.synthetic.main.layout_notes.*
 import kotlinx.android.synthetic.main.layout_rating.*
 import javax.inject.Inject
 
-class ConfiguratorFragment : InjectableFragment() {
+class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
 
     companion object {
 
@@ -34,6 +45,7 @@ class ConfiguratorFragment : InjectableFragment() {
     lateinit var viewModel: ConfiguratorViewModel
 
     private var objects: ObjectsContainer? = null
+    private var formAdapter: FormAdapter? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_configurator, container, false)
@@ -44,7 +56,28 @@ class ConfiguratorFragment : InjectableFragment() {
 
         configurator_endpoint_et.setText(viewModel.getAttributesEndpoint())
 
-        arguments?.getString(LICENSE_ID)?.let {  licenseId ->
+        formAdapter = FormAdapter(this)
+        form_items_rv.layoutManager = LinearLayoutManager(context)
+        form_items_rv.adapter = formAdapter
+
+        form_minus_item_btn.setOnClickListener {
+            objects?.let { objectsContainer ->
+                val size = objectsContainer.form.items.values.size
+                if (size > 1) {
+                    val key = objectsContainer.form.items.entries
+                        .sortedByDescending { it.value.order }[0].key
+                    val updatedMap = objectsContainer.form.items.minus(key)
+                    renderObjects(
+                        objectsContainer.copy(form = objectsContainer.form.copy(items = updatedMap))
+                    )
+                }
+            }
+        }
+        form_plus_item_btn.setOnClickListener {
+            showAddFormItemDialog()
+        }
+
+        arguments?.getString(LICENSE_ID)?.let { licenseId ->
 
             viewModel.setup(licenseId)
 
@@ -59,8 +92,10 @@ class ConfiguratorFragment : InjectableFragment() {
                 override fun onValueSet(value: String) {
                     objects?.let { objectsContainer ->
                         renderObjects(
-                            objectsContainer.copy(notes = objectsContainer.notes.copy(
-                                parameters = objectsContainer.notes.parameters.copy(text = value))
+                            objectsContainer.copy(
+                                notes = objectsContainer.notes.copy(
+                                    parameters = objectsContainer.notes.parameters.copy(text = value)
+                                )
                             )
                         )
                     }
@@ -70,8 +105,10 @@ class ConfiguratorFragment : InjectableFragment() {
                 override fun onValueSet(value: String) {
                     objects?.let { objectsContainer ->
                         renderObjects(
-                            objectsContainer.copy(notes = objectsContainer.notes.copy(
-                                parameters = objectsContainer.notes.parameters.copy(color = value))
+                            objectsContainer.copy(
+                                notes = objectsContainer.notes.copy(
+                                    parameters = objectsContainer.notes.parameters.copy(color = value)
+                                )
                             )
                         )
                     }
@@ -81,8 +118,10 @@ class ConfiguratorFragment : InjectableFragment() {
                 override fun onValueSet(value: String) {
                     objects?.let { objectsContainer ->
                         renderObjects(
-                            objectsContainer.copy(notes = objectsContainer.notes.copy(
-                                parameters = objectsContainer.notes.parameters.copy(fontSize = value.toInt()))
+                            objectsContainer.copy(
+                                notes = objectsContainer.notes.copy(
+                                    parameters = objectsContainer.notes.parameters.copy(fontSize = value.toInt())
+                                )
                             )
                         )
                     }
@@ -100,8 +139,10 @@ class ConfiguratorFragment : InjectableFragment() {
                 override fun onValueSet(value: String) {
                     objects?.let { objectsContainer ->
                         renderObjects(
-                            objectsContainer.copy(accentColor = objectsContainer.accentColor.copy(
-                                parameters = objectsContainer.accentColor.parameters.copy(color = value))
+                            objectsContainer.copy(
+                                accentColor = objectsContainer.accentColor.copy(
+                                    parameters = objectsContainer.accentColor.parameters.copy(color = value)
+                                )
                             )
                         )
                     }
@@ -111,8 +152,10 @@ class ConfiguratorFragment : InjectableFragment() {
                 override fun onValueSet(value: String) {
                     objects?.let { objectsContainer ->
                         renderObjects(
-                            objectsContainer.copy(accentColor = objectsContainer.accentColor.copy(
-                                parameters = objectsContainer.accentColor.parameters.copy(transparent = value))
+                            objectsContainer.copy(
+                                accentColor = objectsContainer.accentColor.copy(
+                                    parameters = objectsContainer.accentColor.parameters.copy(transparent = value)
+                                )
                             )
                         )
                     }
@@ -130,8 +173,10 @@ class ConfiguratorFragment : InjectableFragment() {
                 override fun onValueSet(value: String) {
                     objects?.let { objectsContainer ->
                         renderObjects(
-                            objectsContainer.copy(rating = objectsContainer.rating.copy(
-                                parameters = objectsContainer.rating.parameters.copy(color = value))
+                            objectsContainer.copy(
+                                rating = objectsContainer.rating.copy(
+                                    parameters = objectsContainer.rating.parameters.copy(color = value)
+                                )
                             )
                         )
                     }
@@ -141,10 +186,19 @@ class ConfiguratorFragment : InjectableFragment() {
                 override fun onValueSet(value: String) {
                     objects?.let { objectsContainer ->
                         renderObjects(
-                            objectsContainer.copy(rating = objectsContainer.rating.copy(
-                                parameters = objectsContainer.rating.parameters.copy(quantity = value.toInt()))
+                            objectsContainer.copy(
+                                rating = objectsContainer.rating.copy(
+                                    parameters = objectsContainer.rating.parameters.copy(quantity = value.toInt())
+                                )
                             )
                         )
+                    }
+                }
+            }
+            form_visibility_aw.listener = object : AttributeWidget.Listener {
+                override fun onValueSet(value: Boolean) {
+                    objects?.let { objectsContainer ->
+                        renderObjects(objectsContainer.copy(form = objectsContainer.form.copy(formVisible = value)))
                     }
                 }
             }
@@ -157,6 +211,11 @@ class ConfiguratorFragment : InjectableFragment() {
                 objects?.let { viewModel.saveObjects(configurator_endpoint_et.text.toString(), it) }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        formAdapter = null
     }
 
     fun renderObjects(objectsContainer: ObjectsContainer) {
@@ -174,5 +233,95 @@ class ConfiguratorFragment : InjectableFragment() {
         rating_color_naw.setValue(objectsContainer.rating.parameters.color)
         rating_quantity_naw.setValue(objectsContainer.rating.parameters.quantity.toString())
         rating_progress_naw.setValue(objectsContainer.rating.parameters.progress.toString())
+
+        form_visibility_aw.setValue(objectsContainer.form.formVisible)
+
+        val items = objectsContainer.form.items.entries
+            .sortedBy { it.value.order }
+            .map { (key, formItem) ->
+                FormItemUiModel(
+                    key = key,
+                    name = formItem.name,
+                    backgroundColor = formItem.backgroundColor,
+                    fontColor = formItem.fontColor,
+                    fontSize = formItem.fontSize,
+                    inputValue = formItem.inputValue
+                )
+            }
+        form_minus_item_btn.isEnabled = items.size > 1
+        formAdapter?.setData(items)
+    }
+
+    override fun onValueChange(uiModel: FormItemUiModel) {
+        objects?.let { objectsContainer ->
+            objectsContainer.form.items[uiModel.key]?.copy(
+                name = uiModel.name,
+                backgroundColor = uiModel.backgroundColor,
+                fontColor = uiModel.fontColor,
+                fontSize = uiModel.fontSize
+            )?.let { updatedItem ->
+                val updatedMap = objectsContainer.form.items.plus(uiModel.key to updatedItem)
+                renderObjects(
+                    objectsContainer.copy(form = objectsContainer.form.copy(items = updatedMap))
+                )
+            }
+        }
+    }
+
+    private fun showAddFormItemDialog() {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_form_item, null)
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle(R.string.dialog_form_add_item)
+            .setView(dialogView)
+            .create()
+        val nameFilterArray = arrayOfNulls<InputFilter>(1)
+        nameFilterArray[0] = InputFilter.LengthFilter(100)
+        dialogView.dialog_form_add_name_et.filters = nameFilterArray
+
+        dialogView.dialog_form_add_font_size_et.inputType = InputType.TYPE_CLASS_NUMBER
+        val fontSizeFilterArray = arrayOfNulls<InputFilter>(1)
+        fontSizeFilterArray[0] = InputFilter.LengthFilter(2)
+        dialogView.dialog_form_add_font_size_et.filters = fontSizeFilterArray
+
+        fun updateAddButton() {
+            dialogView.dialog_form_add_add_btn.isEnabled =
+                Utils.colorRegex.matches(dialogView.dialog_form_add_bg_color_et.text.toString())
+                        && Utils.colorRegex.matches(dialogView.dialog_form_add_font_color_et.text.toString())
+                        && dialogView.dialog_form_add_font_size_et.text.toString().isNotEmpty()
+        }
+        dialogView.dialog_form_add_bg_color_et.addTextChangedListener {
+            updateAddButton()
+        }
+        dialogView.dialog_form_add_font_color_et.addTextChangedListener {
+            updateAddButton()
+        }
+        dialogView.dialog_form_add_font_size_et.addTextChangedListener {
+            updateAddButton()
+        }
+
+        dialogView.dialog_form_add_cancel_btn.setOnClickListener {
+            dialog.dismiss()
+        }
+        dialogView.dialog_form_add_add_btn.setOnClickListener {
+            dialog.dismiss()
+            objects?.let { objectsContainer ->
+                val order = objectsContainer.form.items.values
+                    .sortedByDescending { it.order }[0].order + 1
+                val key = "input_${order}"
+                val newFormItem = FormItem(
+                    order = order,
+                    name = dialogView.dialog_form_add_name_et.text.toString(),
+                    backgroundColor = dialogView.dialog_form_add_bg_color_et.text.toString(),
+                    fontColor = dialogView.dialog_form_add_font_color_et.text.toString(),
+                    fontSize = dialogView.dialog_form_add_font_size_et.text.toString().toInt(),
+                    inputValue = ""
+                )
+                val updatedMap = objectsContainer.form.items.plus(key to newFormItem)
+                renderObjects(
+                    objectsContainer.copy(form = objectsContainer.form.copy(items = updatedMap))
+                )
+            }
+        }
+        dialog.show()
     }
 }

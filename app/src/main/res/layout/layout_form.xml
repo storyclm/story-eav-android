@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.TitleWidget
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="Form" />
+
+    <expert.rightperception.attributesapp.ui.configurator.widget.AttributeWidget
+        android:id="@+id/form_visibility_aw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:key="form" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/form_items_rv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:overScrollMode="never" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:gravity="center_vertical|end"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/form_minus_item_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:enabled="false"
+            android:src="@drawable/ic_minus" />
+
+        <ImageButton
+            android:id="@+id/form_plus_item_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_plus" />
+
+    </LinearLayout>
+</LinearLayout>

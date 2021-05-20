@@ -24,10 +24,8 @@
 
             <include layout="@layout/layout_rating" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/configurator_rv"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+            <include layout="@layout/layout_form" />
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

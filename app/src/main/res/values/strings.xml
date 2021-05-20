@@ -17,4 +17,5 @@
     <string name="dialog_edit_title">Укажите значение</string>
     <string name="dialog_edit_add">Добавить</string>
     <string name="dialog_edit_cancel">Отмена</string>
+    <string name="dialog_form_add_item">Добавить новое поле в форму</string>
 </resources>

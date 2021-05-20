@@ -2,13 +2,17 @@ package expert.rightperception.attributesapp.ui.configurator.model
 
 import com.moqod.android.recycler.diff.DiffEntity
 
-data class AttributeItemUiModel(
+data class FormItemUiModel(
     val key: String,
-    val value: Boolean
+    val name: String,
+    val backgroundColor: String,
+    val fontColor: String,
+    val fontSize: Int,
+    val inputValue: String
 ) : DiffEntity {
 
     override fun areItemsTheSame(entity: DiffEntity?): Boolean {
-        return entity is AttributeItemUiModel && entity.key == key
+        return entity is FormItemUiModel && entity.key == key
     }
 
     override fun areContentsTheSame(entity: DiffEntity?): Boolean {
