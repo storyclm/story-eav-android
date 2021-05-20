@@ -69,20 +69,30 @@ class StoryObjectRepository @Inject constructor(
         return preferencesStorage.getAttributesEndpoint()
     }
 
-    suspend fun setObject(parentId: String, objectsContainer: ObjectsContainer) {
+    suspend fun setObject(rootId: String, objectsContainer: ObjectsContainer) {
         mutex.withLock {
-            storyAttributes.getStorageApi().putObject(parentId, objectsContainer)
+            storyAttributes.getStorageApi().putObject(rootId, objectsContainer)
             objectsContainerStateFlow.emit(objectsContainer)
         }
     }
 
-    fun observeObjects(parentId: String): Flow<ObjectsContainer> {
+    suspend fun deleteFormItem(rootId: String, key: String) {
+        mutex.withLock {
+            storyAttributes.getStorageApi().getByParentId(rootId).first { it.key == "form" }.get("items")?.get(key)?.id?.let { id ->
+                storyAttributes.getStorageApi().deleteById(id)
+            }
+            storyAttributes.getStorageApi().getObjectByParentId(rootId, ObjectsContainer::class.java)
+            objectsContainerStateFlow.emit(storyAttributes.getStorageApi().getObjectByParentId(rootId, ObjectsContainer::class.java))
+        }
+    }
+
+    fun observeObjects(rootId: String): Flow<ObjectsContainer> {
         return objectsContainerStateFlow
             .onStart {
-                if (storyAttributes.getStorageApi().getByParentId(parentId).isEmpty()) {
+                if (storyAttributes.getStorageApi().getByParentId(rootId).isEmpty()) {
                     emit(ObjectsContainer())
                 } else {
-                    emit(storyAttributes.getStorageApi().getObjectByParentId(parentId, ObjectsContainer::class.java))
+                    emit(storyAttributes.getStorageApi().getObjectByParentId(rootId, ObjectsContainer::class.java))
                 }
             }
     }

@@ -196,12 +196,12 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
             }
         }
         viewModel.storyObjectLiveData.observe(viewLifecycleOwner) { objectString ->
-            if (objectString != storyObject) {
+//            if (objectString != storyObject) {
                 storyObject = objectString
                 contentView.evaluateJavascript("var _story = ${objectString}") {
                     contentView.loadUrl("javascript:_onStoryChange()")
                 }
-            }
+//            }
         }
     }
 

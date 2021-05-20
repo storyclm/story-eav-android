@@ -66,10 +66,7 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
                 if (size > 1) {
                     val key = objectsContainer.form.items.entries
                         .sortedByDescending { it.value.order }[0].key
-                    val updatedMap = objectsContainer.form.items.minus(key)
-                    renderObjects(
-                        objectsContainer.copy(form = objectsContainer.form.copy(items = updatedMap))
-                    )
+                    viewModel.deleteFormItem(configurator_endpoint_et.text.toString(), key)
                 }
             }
         }

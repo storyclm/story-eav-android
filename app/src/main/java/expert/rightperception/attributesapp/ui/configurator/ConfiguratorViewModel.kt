@@ -38,4 +38,11 @@ class ConfiguratorViewModel @Inject constructor(
             storyObjectRepository.setObject(licenseId, objectsContainer)
         }
     }
+
+    fun deleteFormItem(endpoint: String, key: String) {
+        viewModelScope.launch {
+            storyObjectRepository.setAttributesEndpoint(endpoint)
+            storyObjectRepository.deleteFormItem(licenseId, key)
+        }
+    }
 }
