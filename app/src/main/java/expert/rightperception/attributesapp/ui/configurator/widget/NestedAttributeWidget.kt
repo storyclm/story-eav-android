@@ -4,12 +4,15 @@ import android.content.Context
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
 import android.text.InputType
+import android.text.method.DigitsKeyListener
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
+import com.redmadrobot.inputmask.MaskedTextChangedListener.Companion.installOn
+import com.redmadrobot.inputmask.MaskedTextChangedListener.ValueListener
 import expert.rightperception.attributesapp.R
 import expert.rightperception.attributesapp.ui.common.Utils
 import kotlinx.android.synthetic.main.dialog_edit.view.*
@@ -56,9 +59,17 @@ class NestedAttributeWidget(context: Context, attrs: AttributeSet?) : FrameLayou
                         dialogView.dialog_edit_et.filters = filterArray
                     }
                     1 -> {
-                        dialogView.dialog_edit_et.addTextChangedListener {
-                            dialogView.dialog_edit_add_btn.isEnabled = Utils.colorRegex.matches(it.toString())
-                        }
+                        installOn(
+                            dialogView.dialog_edit_et,
+                            "#[______]",
+                            object : ValueListener {
+                                override fun onTextChanged(maskFilled: Boolean, extractedValue: String, formattedValue: String) {
+                                    dialogView.dialog_edit_add_btn.isEnabled = Utils.colorRegex.matches(formattedValue)
+                                }
+                            }
+                        )
+                        dialogView.dialog_edit_et.hint = "#ffffff"
+                        dialogView.dialog_edit_et.keyListener = DigitsKeyListener.getInstance("#0123456789abcdefABCDEF")
                     }
                     2 -> {
                         dialogView.dialog_edit_et.inputType = InputType.TYPE_CLASS_NUMBER

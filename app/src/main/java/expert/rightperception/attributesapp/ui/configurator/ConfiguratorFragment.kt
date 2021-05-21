@@ -3,12 +3,14 @@ package expert.rightperception.attributesapp.ui.configurator
 import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputType
+import android.text.method.DigitsKeyListener
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.redmadrobot.inputmask.MaskedTextChangedListener
 import expert.rightperception.attributesapp.R
 import expert.rightperception.attributesapp.domain.model.objects.FormItem
 import expert.rightperception.attributesapp.domain.model.objects.ObjectsContainer
@@ -279,6 +281,20 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
         val fontSizeFilterArray = arrayOfNulls<InputFilter>(1)
         fontSizeFilterArray[0] = InputFilter.LengthFilter(2)
         dialogView.dialog_form_add_font_size_et.filters = fontSizeFilterArray
+
+        MaskedTextChangedListener.installOn(
+            dialogView.dialog_form_add_bg_color_et,
+            "#[______]"
+        )
+        dialogView.dialog_form_add_bg_color_et.hint = "#ffffff"
+        dialogView.dialog_form_add_bg_color_et.keyListener = DigitsKeyListener.getInstance("#0123456789abcdefABCDEF")
+
+        MaskedTextChangedListener.installOn(
+            dialogView.dialog_form_add_font_color_et,
+            "#[______]"
+        )
+        dialogView.dialog_form_add_font_color_et.hint = "#ffffff"
+        dialogView.dialog_form_add_font_color_et.keyListener = DigitsKeyListener.getInstance("#0123456789abcdefABCDEF")
 
         fun updateAddButton() {
             dialogView.dialog_form_add_add_btn.isEnabled =

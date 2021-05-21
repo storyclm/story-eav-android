@@ -84,6 +84,7 @@ dependencies {
     }
 
     implementation 'com.github.moqod.mqd-android-utils:ui-utils:9eaaf83fa2'
+    implementation 'com.redmadrobot:input-mask-android:6.0.0'
 
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
