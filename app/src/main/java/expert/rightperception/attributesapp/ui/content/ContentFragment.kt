@@ -154,14 +154,21 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
 //            }
 
             @JavascriptInterface
-            fun setStoryProp(keyPath: String, value: String) {
-                Log.e("DBG_", "set $keyPath $value")
+            fun setStoryProp(keyPath: String, type: String, value: String?) {
+                Log.e("DBG_", "set $keyPath $value ${value?.javaClass?.name}")
                 val json = JsonParser.parseString(storyObject).asJsonObject
                 val keys = listOf("state").plus(keyPath.split("."))
                 val pathKeys = keys.subList(0, keys.size - 1)
                 val setKey = keys.last()
                 pathKeys.fold(json) { acc, key -> acc?.getAsJsonObject(key) }
-                    ?.addProperty(setKey, value)
+                    ?.run {
+                        when (type) {
+                            "boolean" -> addProperty(setKey, value.toBoolean())
+                            "integer" -> addProperty(setKey, value?.toInt())
+                            "float" -> addProperty(setKey, value?.toDouble())
+                            else -> addProperty(setKey, value)
+                        }
+                    }
                 val updatedStory = json.toString()
                 storyObject = updatedStory
                 viewModel.updateStoryObject(updatedStory)
