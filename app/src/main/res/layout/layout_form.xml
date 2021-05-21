@@ -38,7 +38,7 @@
             android:layout_marginEnd="6dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:enabled="false"
-            android:src="@drawable/ic_minus" />
+            android:src="@drawable/bg_minus" />
 
         <ImageButton
             android:id="@+id/form_plus_item_btn"
