@@ -154,10 +154,10 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
 //            }
 
             @JavascriptInterface
-            fun setStoryProp(keyPath: String, type: String, value: String?) {
-                Log.e("DBG_", "set $keyPath $value ${value?.javaClass?.name}")
+            fun setStoryProp(objectName: String, keyPath: String, type: String, value: String?) {
+                Log.e("DBG_", "set $objectName $keyPath $value ${value?.javaClass?.name}")
                 val json = JsonParser.parseString(storyObject).asJsonObject
-                val keys = listOf("state").plus(keyPath.split("."))
+                val keys = listOf(objectName).plus(keyPath.split("."))
                 val pathKeys = keys.subList(0, keys.size - 1)
                 val setKey = keys.last()
                 pathKeys.fold(json) { acc, key -> acc?.getAsJsonObject(key) }
@@ -175,10 +175,10 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
             }
 
             @JavascriptInterface
-            fun deleteStoryProp(keyPath: String) {
-                Log.e("DBG_", "delete $keyPath")
+            fun deleteStoryProp(objectName: String, keyPath: String) {
+                Log.e("DBG_", "delete $objectName $keyPath")
                 val json = JsonParser.parseString(storyObject).asJsonObject
-                val keys = listOf("state").plus(keyPath.split("."))
+                val keys = listOf(objectName).plus(keyPath.split("."))
                 val pathKeys = keys.subList(0, keys.size - 1)
                 val deleteKey = keys.last()
                 pathKeys.fold(json) { acc, key -> acc?.getAsJsonObject(key) }
