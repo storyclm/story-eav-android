@@ -96,13 +96,9 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
 
     private fun createBridge(presentationId: Int, sessionId: String?, initialObject: ObjectsContainer) {
         val attrsContextObjectConfiguration = ContextObjectConfiguration(
-            parameters = ContextObjectParameters(
-                name = "attributes",
-                appMutable = true,
-                contentMutable = true
-            ),
+            name = "attributes",
             initialObject = initialObject,
-            repository = viewModel
+            mutabilityPolicy = AppContentMutablePolicy(viewModel.storyObjectRepository, viewModel.storyObjectRepository)
         )
         val bridgeSettings = BridgeSettings(
             sessionId = sessionId,

@@ -10,7 +10,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import ru.breffi.story.domain.bridge.model.ContextObjectRepository
+import ru.breffi.story.domain.bridge.model.AppUpdatesProvider
+import ru.breffi.story.domain.bridge.model.ContentUpdatesReceiver
 import ru.rightperception.storyattributes.api.StoryAttributes
 import ru.rightperception.storyattributes.api.model.StoryAttributesSettings
 import ru.rightperception.storyattributes.domain.model.AttributeModel
@@ -24,7 +25,7 @@ class StoryObjectRepository @Inject constructor(
     private val app: App,
     private val preferencesStorage: PreferencesStorage,
     private val licenseRepository: LicenseRepository
-) : ContextObjectRepository {
+) : AppUpdatesProvider, ContentUpdatesReceiver {
 
     private val storyObjectFile = File(app.filesDir.absolutePath, "storyObject.txt").apply {
         if (!exists()) {
@@ -40,7 +41,7 @@ class StoryObjectRepository @Inject constructor(
     private val mutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    private var listener: ContextObjectRepository.UpdateListener? = null
+    private var listener: AppUpdatesProvider.UpdateListener? = null
 
     init {
         scope.launch {
@@ -145,7 +146,7 @@ class StoryObjectRepository @Inject constructor(
         setValue(pathKeys, null)
     }
 
-    override fun setUpdateListener(updateListener: ContextObjectRepository.UpdateListener) {
+    override fun setUpdateListener(updateListener: AppUpdatesProvider.UpdateListener) {
         listener = updateListener
     }
 
