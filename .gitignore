@@ -4,6 +4,7 @@
 *.ap_
 *.aab
 !expert/**/*.aar
+!storycontent-local/**/*.aar
 
 # Files for the ART/Dalvik VM
 *.dex

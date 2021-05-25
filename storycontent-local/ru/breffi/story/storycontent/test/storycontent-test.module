@@ -1,0 +1,274 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "ru.breffi.story",
+    "module": "storycontent",
+    "version": "test",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "6.5",
+      "buildId": "jhy57xwfengitdakixagzrt3jy"
+    }
+  },
+  "variants": [
+    {
+      "name": "runtime",
+      "attributes": {
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "io.realm",
+          "module": "realm-android-library",
+          "version": {
+            "requires": "10.3.0"
+          }
+        },
+        {
+          "group": "io.realm",
+          "module": "realm-android-kotlin-extensions",
+          "version": {
+            "requires": "10.3.0"
+          }
+        },
+        {
+          "group": "io.realm",
+          "module": "realm-annotations",
+          "version": {
+            "requires": "10.3.0"
+          }
+        },
+        {
+          "group": "org.apache.commons",
+          "module": "commons-text",
+          "version": {
+            "requires": "1.8"
+          }
+        },
+        {
+          "group": "javax.inject",
+          "module": "javax.inject",
+          "version": {
+            "requires": "1"
+          }
+        },
+        {
+          "group": "com.orhanobut",
+          "module": "hawk",
+          "version": {
+            "requires": "2.0.1"
+          }
+        },
+        {
+          "group": "net.lingala.zip4j",
+          "module": "zip4j",
+          "version": {
+            "requires": "1.3.1"
+          }
+        },
+        {
+          "group": "com.github.storyclm",
+          "module": "story-iot-android",
+          "version": {
+            "requires": "3.0.1"
+          }
+        },
+        {
+          "group": "com.annimon",
+          "module": "stream",
+          "version": {
+            "requires": "1.2.1"
+          }
+        },
+        {
+          "group": "com.auth0.android",
+          "module": "jwtdecode",
+          "version": {
+            "requires": "1.4.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-android-extensions-runtime",
+          "version": {
+            "requires": "1.4.10"
+          }
+        },
+        {
+          "group": "androidx.appcompat",
+          "module": "appcompat",
+          "version": {
+            "requires": "1.2.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk7",
+          "version": {
+            "requires": "1.4.10"
+          }
+        },
+        {
+          "group": "com.squareup.retrofit2",
+          "module": "retrofit",
+          "version": {
+            "requires": "2.7.1"
+          }
+        },
+        {
+          "group": "com.squareup.retrofit2",
+          "module": "converter-gson",
+          "version": {
+            "requires": "2.7.1"
+          }
+        },
+        {
+          "group": "com.squareup.retrofit2",
+          "module": "adapter-rxjava2",
+          "version": {
+            "requires": "2.7.1"
+          }
+        },
+        {
+          "group": "com.squareup.okhttp3",
+          "module": "logging-interceptor",
+          "version": {
+            "requires": "3.12.1"
+          }
+        },
+        {
+          "group": "com.google.code.gson",
+          "module": "gson",
+          "version": {
+            "requires": "2.8.5"
+          }
+        },
+        {
+          "group": "io.reactivex.rxjava2",
+          "module": "rxandroid",
+          "version": {
+            "requires": "2.1.1"
+          }
+        },
+        {
+          "group": "io.reactivex.rxjava2",
+          "module": "rxjava",
+          "version": {
+            "requires": "2.2.19"
+          }
+        },
+        {
+          "group": "com.github.tbruyelle",
+          "module": "rxpermissions",
+          "version": {
+            "requires": "0.10.2"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "storycontent-test.aar",
+          "url": "storycontent-test.aar",
+          "size": 735199,
+          "sha512": "48a567f14d549513bcdfb9bd0f88a67eaa2c9b78158f4d93d7468056193329c007e8d7cb0bb7de08ff62e0ebece31edb2a781b35c015d6bc1e88a46af25f1f25",
+          "sha256": "527deb1b14dd76bca3502b76cecaa96dea157e9f8df7241e0980fa9b5477b290",
+          "sha1": "4e6319297d4037e98e65abd6d31b2c6b84dc2283",
+          "md5": "9bcea259b73978d61548ce52c94c023c"
+        }
+      ]
+    },
+    {
+      "name": "api",
+      "attributes": {
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "io.realm",
+          "module": "realm-android-library",
+          "version": {
+            "requires": "10.3.0"
+          }
+        },
+        {
+          "group": "io.realm",
+          "module": "realm-android-kotlin-extensions",
+          "version": {
+            "requires": "10.3.0"
+          }
+        },
+        {
+          "group": "io.realm",
+          "module": "realm-annotations",
+          "version": {
+            "requires": "10.3.0"
+          }
+        },
+        {
+          "group": "org.apache.commons",
+          "module": "commons-text",
+          "version": {
+            "requires": "1.8"
+          }
+        },
+        {
+          "group": "javax.inject",
+          "module": "javax.inject",
+          "version": {
+            "requires": "1"
+          }
+        },
+        {
+          "group": "com.orhanobut",
+          "module": "hawk",
+          "version": {
+            "requires": "2.0.1"
+          }
+        },
+        {
+          "group": "net.lingala.zip4j",
+          "module": "zip4j",
+          "version": {
+            "requires": "1.3.1"
+          }
+        },
+        {
+          "group": "com.github.storyclm",
+          "module": "story-iot-android",
+          "version": {
+            "requires": "3.0.1"
+          }
+        },
+        {
+          "group": "com.annimon",
+          "module": "stream",
+          "version": {
+            "requires": "1.2.1"
+          }
+        },
+        {
+          "group": "com.auth0.android",
+          "module": "jwtdecode",
+          "version": {
+            "requires": "1.4.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "storycontent-test.aar",
+          "url": "storycontent-test.aar",
+          "size": 735199,
+          "sha512": "48a567f14d549513bcdfb9bd0f88a67eaa2c9b78158f4d93d7468056193329c007e8d7cb0bb7de08ff62e0ebece31edb2a781b35c015d6bc1e88a46af25f1f25",
+          "sha256": "527deb1b14dd76bca3502b76cecaa96dea157e9f8df7241e0980fa9b5477b290",
+          "sha1": "4e6319297d4037e98e65abd6d31b2c6b84dc2283",
+          "md5": "9bcea259b73978d61548ce52c94c023c"
+        }
+      ]
+    }
+  ]
+}

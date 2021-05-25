@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>ru.breffi.story</groupId>
+  <artifactId>storycontent</artifactId>
+  <versioning>
+    <latest>test</latest>
+    <release>test</release>
+    <versions>
+      <version>test</version>
+    </versions>
+    <lastUpdated>20210525071754</lastUpdated>
+  </versioning>
+</metadata>

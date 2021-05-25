@@ -9,7 +9,6 @@ import expert.rightperception.attributesapp.ui.content.ContentFragment
 
 class MainAdapter(
     fragmentActivity: FragmentActivity,
-    private val licenseId: String,
     private val contentModel: ContentModel
 ) : FragmentStateAdapter(fragmentActivity) {
 
@@ -19,10 +18,10 @@ class MainAdapter(
 
     override fun createFragment(position: Int): Fragment {
         return if (position == 0) {
-            ContentFragment.newInstance(licenseId, contentModel.presentationEntity.id, contentModel.injectionScript)
+            ContentFragment.newInstance(contentModel.presentationEntity.id, contentModel.injectionScript)
         } else {
 //            ConfiguratorTestFragment()
-            ConfiguratorFragment.newInstance(licenseId)
+            ConfiguratorFragment.newInstance()
         }
     }
 

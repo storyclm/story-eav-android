@@ -1,35 +1,27 @@
 package expert.rightperception.attributesapp.ui.content
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import expert.rightperception.attributesapp.data.repository.story_object.StoryObjectRepository
+import expert.rightperception.attributesapp.domain.model.objects.ObjectsContainer
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import ru.breffi.story.domain.bridge.model.ContextObjectRepository
 import javax.inject.Inject
 
 class ContentViewModel @Inject constructor(
     private val storyObjectRepository: StoryObjectRepository
-) : ViewModel() {
+) : ViewModel(), ContextObjectRepository by storyObjectRepository {
 
-    private val mutex = Mutex()
+    private val initialStoryObjectLiveData = MutableLiveData<ObjectsContainer>()
 
-    val storyObjectLiveData = storyObjectRepository.observeObject()
-        .asLiveData()
-
-    private val initialStoryObjectLiveData = MutableLiveData<String>()
-
-    fun getData(): LiveData<String> {
+    fun getInitialData(): LiveData<ObjectsContainer> {
         viewModelScope.launch {
-            initialStoryObjectLiveData.value = storyObjectRepository.getObject()
-        }
-        return initialStoryObjectLiveData
-    }
-
-    fun updateStoryObject(objectString: String) {
-        viewModelScope.launch {
-            mutex.withLock {
-                storyObjectRepository.saveObject(objectString)
+            storyObjectRepository.getAttributes()?.let {
+                initialStoryObjectLiveData.value = it
             }
         }
+        return initialStoryObjectLiveData
     }
 }

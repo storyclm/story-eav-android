@@ -31,7 +31,7 @@ class MainActivity : InjectableActivity() {
             main_error_layout.isVisible = uiState == Error
 
             if (uiState is Data) {
-                main_pager.adapter = MainAdapter(this, uiState.licenseModel.id, uiState.contentModel)
+                main_pager.adapter = MainAdapter(this, uiState.contentModel)
                 TabLayoutMediator(main_tab_layout, main_pager) { tab, position ->
                     tab.text = getString(if (position == 0) R.string.main_tab_content else R.string.main_tab_configurator)
                 }.attach()

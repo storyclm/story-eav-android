@@ -15,18 +15,8 @@ class ConfiguratorViewModel @Inject constructor(
     private val storyObjectRepository: StoryObjectRepository
 ) : ViewModel() {
 
-    private lateinit var licenseId: String
-    private val licenseIdFlow = MutableSharedFlow<String>(1)
-
-    val uiModel = licenseIdFlow
-        .filterNotNull()
-        .flatMapLatest { licenseId -> storyObjectRepository.observeObjects(licenseId) }
+    val uiModel = storyObjectRepository.observeAttributes()
         .asLiveData()
-
-    fun setup(licenseId: String) {
-        this.licenseId = licenseId
-        licenseIdFlow.tryEmit(licenseId)
-    }
 
     fun getAttributesEndpoint(): String {
         return storyObjectRepository.getAttributesEndpoint()
@@ -35,14 +25,14 @@ class ConfiguratorViewModel @Inject constructor(
     fun saveObjects(endpoint: String, objectsContainer: ObjectsContainer) {
         viewModelScope.launch {
             storyObjectRepository.setAttributesEndpoint(endpoint)
-            storyObjectRepository.setObject(licenseId, objectsContainer)
+            storyObjectRepository.setAttributes(objectsContainer)
         }
     }
 
     fun deleteFormItem(endpoint: String, key: String) {
         viewModelScope.launch {
             storyObjectRepository.setAttributesEndpoint(endpoint)
-            storyObjectRepository.deleteFormItem(licenseId, key)
+            storyObjectRepository.deleteFormItemAttributes(key)
         }
     }
 }

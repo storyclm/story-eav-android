@@ -19,7 +19,8 @@ allprojects {
         google()
         jcenter()
         maven { url "https://jitpack.io" }
-        maven { url "https://raw.githubusercontent.com/storyclm/story-content-android/master" }
+//        maven { url "https://raw.githubusercontent.com/storyclm/story-content-android/master" }
+        maven { url "../storycontent-local" }
         maven { url "https://raw.githubusercontent.com/storyclm/story-eav-android/develop" }
     }
 }
