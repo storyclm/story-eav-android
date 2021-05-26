@@ -8,6 +8,7 @@ import javax.inject.Singleton
 class PreferencesStorage @Inject constructor(context: Context) {
 
     companion object {
+        const val DEFAULT_ATTRIBUTES_ENDPOINT = "https://api-staging.rightperception.expert/"
 
         private const val KEY_ATTRIBUTES_ENDPOINT = "KEY_ENDPOINT"
     }
@@ -19,6 +20,6 @@ class PreferencesStorage @Inject constructor(context: Context) {
     }
 
     fun getAttributesEndpoint(): String {
-        return prefs.getString(KEY_ATTRIBUTES_ENDPOINT, "https://api-staging.rightperception.expert/") as String
+        return prefs.getString(KEY_ATTRIBUTES_ENDPOINT, DEFAULT_ATTRIBUTES_ENDPOINT) as String
     }
 }

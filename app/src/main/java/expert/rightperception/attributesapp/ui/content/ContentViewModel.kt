@@ -4,22 +4,25 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import expert.rightperception.attributesapp.data.repository.story_object.StoryObjectRepository
-import expert.rightperception.attributesapp.domain.model.objects.ObjectsContainer
+import expert.rightperception.attributesapp.data.repository.story_object.PresentationContextRepository
+import expert.rightperception.attributesapp.data.repository.story_object.TestObjectRepository
+import expert.rightperception.attributesapp.ui.content.model.ContentDataModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ContentViewModel @Inject constructor(
-    val storyObjectRepository: StoryObjectRepository
+    val presentationContextRepository: PresentationContextRepository,
+    val testObjectRepository: TestObjectRepository
 ) : ViewModel() {
 
-    private val initialStoryObjectLiveData = MutableLiveData<ObjectsContainer>()
+    private val initialStoryObjectLiveData = MutableLiveData<ContentDataModel>()
 
-    fun getInitialData(): LiveData<ObjectsContainer> {
+    fun getInitialData(): LiveData<ContentDataModel> {
         viewModelScope.launch {
-            storyObjectRepository.getAttributes()?.let {
-                initialStoryObjectLiveData.value = it
-            }
+            initialStoryObjectLiveData.value = ContentDataModel(
+                presentationContext = presentationContextRepository.getPresenationContext(),
+                testObject = testObjectRepository.getTestObject()
+            )
         }
         return initialStoryObjectLiveData
     }

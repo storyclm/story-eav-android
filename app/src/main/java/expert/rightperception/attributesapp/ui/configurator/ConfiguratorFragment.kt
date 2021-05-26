@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.redmadrobot.inputmask.MaskedTextChangedListener
 import expert.rightperception.attributesapp.R
 import expert.rightperception.attributesapp.domain.model.objects.FormItem
-import expert.rightperception.attributesapp.domain.model.objects.ObjectsContainer
+import expert.rightperception.attributesapp.domain.model.objects.PresentationContext
 import expert.rightperception.attributesapp.ui.common.InjectableFragment
 import expert.rightperception.attributesapp.ui.common.Utils
 import expert.rightperception.attributesapp.ui.configurator.adapter.FormAdapter
@@ -40,7 +40,7 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
     @Inject
     lateinit var viewModel: ConfiguratorViewModel
 
-    private var objects: ObjectsContainer? = null
+    private var objects: PresentationContext? = null
     private var formAdapter: FormAdapter? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -207,25 +207,25 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
         formAdapter = null
     }
 
-    fun renderObjects(objectsContainer: ObjectsContainer) {
-        objects = objectsContainer
-        notes_visibility_aw.setValue(objectsContainer.notes.notesVisible)
-        notes_color_naw.setValue(objectsContainer.notes.parameters.color)
-        notes_text_naw.setValue(objectsContainer.notes.parameters.text)
-        notes_fontsize_naw.setValue(objectsContainer.notes.parameters.fontSize.toString())
+    fun renderObjects(presentationContext: PresentationContext) {
+        objects = presentationContext
+        notes_visibility_aw.setValue(presentationContext.notes.notesVisible)
+        notes_color_naw.setValue(presentationContext.notes.parameters.color)
+        notes_text_naw.setValue(presentationContext.notes.parameters.text)
+        notes_fontsize_naw.setValue(presentationContext.notes.parameters.fontSize.toString())
 
-        accentcolor_visibility_aw.setValue(objectsContainer.accentColor.accentColorVisible)
-        accentcolor_color_naw.setValue(objectsContainer.accentColor.parameters.color)
-        accentcolor_transparent_naw.setValue(objectsContainer.accentColor.parameters.transparent)
+        accentcolor_visibility_aw.setValue(presentationContext.accentColor.accentColorVisible)
+        accentcolor_color_naw.setValue(presentationContext.accentColor.parameters.color)
+        accentcolor_transparent_naw.setValue(presentationContext.accentColor.parameters.transparent)
 
-        rating_visibility_aw.setValue(objectsContainer.rating.ratingVisible)
-        rating_color_naw.setValue(objectsContainer.rating.parameters.color)
-        rating_quantity_naw.setValue(objectsContainer.rating.parameters.quantity.toString())
-        rating_progress_naw.setValue(objectsContainer.rating.parameters.progress.toString())
+        rating_visibility_aw.setValue(presentationContext.rating.ratingVisible)
+        rating_color_naw.setValue(presentationContext.rating.parameters.color)
+        rating_quantity_naw.setValue(presentationContext.rating.parameters.quantity.toString())
+        rating_progress_naw.setValue(presentationContext.rating.parameters.progress.toString())
 
-        form_visibility_aw.setValue(objectsContainer.form.formVisible)
+        form_visibility_aw.setValue(presentationContext.form.formVisible)
 
-        val items = objectsContainer.form.items.entries
+        val items = presentationContext.form.items.entries
             .sortedBy { it.value.order }
             .map { (key, formItem) ->
                 FormItemUiModel(

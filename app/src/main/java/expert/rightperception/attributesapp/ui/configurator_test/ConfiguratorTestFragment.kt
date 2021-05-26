@@ -21,14 +21,15 @@ class ConfiguratorTestFragment : InjectableFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.objectString.observe(viewLifecycleOwner) { objectString ->
+        viewModel.testObject.observe(viewLifecycleOwner) { jsonObject ->
+            val objectString = jsonObject.toString()
             if (configurator_et.text.toString() != objectString) {
                 configurator_et.setText(objectString)
             }
         }
 
         configurator_save_btn.setOnClickListener {
-            viewModel.saveObject(configurator_et.text.toString())
+            viewModel.saveTestObject(configurator_et.text.toString())
         }
     }
 }

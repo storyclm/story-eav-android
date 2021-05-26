@@ -9,8 +9,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.lifecycleScope
 import expert.rightperception.attributesapp.R
-import expert.rightperception.attributesapp.domain.model.objects.ObjectsContainer
 import expert.rightperception.attributesapp.ui.common.InjectableFragment
+import expert.rightperception.attributesapp.ui.content.model.ContentDataModel
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_content.*
 import kotlinx.coroutines.Job
@@ -57,6 +57,8 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
 
     private var sessionData: SessionData? = null
 
+    private var injectionScript: String? = null
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_content, container, false)
     }
@@ -66,11 +68,12 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
 
         WebView.setWebContentsDebuggingEnabled(true)
         arguments?.let { args ->
+            injectionScript = args.getString(INJECTION_SCRIPT)
             val id = args.getInt(PRESENTATION_ID, -1)
             if (id != -1) {
-                viewModel.getInitialData().observe(viewLifecycleOwner) { initialObject ->
+                viewModel.getInitialData().observe(viewLifecycleOwner) { contentData ->
                     val sessionId = sessionData?.sessionId ?: savedInstanceState?.getString(KEY_SESSION_ID)
-                    createBridge(id, sessionId, initialObject)
+                    createBridge(id, sessionId, contentData)
                 }
             }
         }
@@ -94,12 +97,24 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
         super.onDestroyView()
     }
 
-    private fun createBridge(presentationId: Int, sessionId: String?, initialObject: ObjectsContainer) {
-        val attrsContextObjectConfiguration = ContextObjectConfiguration(
-            name = "presentation",
-            initialObject = initialObject,
-            mutabilityPolicy = AppContentMutablePolicy(viewModel.storyObjectRepository, viewModel.storyObjectRepository)
-        )
+    private fun createBridge(presentationId: Int, sessionId: String?, contentDataModel: ContentDataModel) {
+        val contextObjectConfigs = mutableListOf<ContextObjectConfiguration>()
+        contentDataModel.presentationContext?.let { presentationContext ->
+            val presentationContextObjectConfiguration = ContextObjectConfiguration(
+                name = "presentation",
+                initialObject = presentationContext,
+                mutabilityPolicy = AppContentMutablePolicy(viewModel.presentationContextRepository, viewModel.presentationContextRepository)
+            )
+            contextObjectConfigs.add(presentationContextObjectConfiguration)
+        }
+        contentDataModel.testObject?.let { testObject ->
+            val testContextObjectConfiguration = ContextObjectConfiguration(
+                name = "debugAppState",
+                initialObject = testObject,
+                mutabilityPolicy = AppContentMutablePolicy(viewModel.testObjectRepository, viewModel.testObjectRepository)
+            )
+            contextObjectConfigs.add(testContextObjectConfiguration)
+        }
         val bridgeSettings = BridgeSettings(
             sessionId = sessionId,
             userId = "demo",
@@ -110,7 +125,8 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
             this,
             presentationId,
             bridgeSettings,
-            listOf(attrsContextObjectConfiguration)
+            contextObjectConfigs,
+            injectionScript
         )
         val modules = listOf<BridgeModule>(
 //            UiModule(requireActivity(), close_button)

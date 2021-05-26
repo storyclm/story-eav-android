@@ -1,6 +1,6 @@
 package expert.rightperception.attributesapp.domain.model.objects
 
-data class ObjectsContainer(
+data class PresentationContext(
     val notes: NotesObject = NotesObject(
         notesVisible = true,
         parameters = NotesParameters(

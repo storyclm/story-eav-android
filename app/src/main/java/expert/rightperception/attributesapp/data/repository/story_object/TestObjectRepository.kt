@@ -1,13 +1,16 @@
 package expert.rightperception.attributesapp.data.repository.story_object
 
+import com.google.gson.JsonObject
 import expert.rightperception.attributesapp.App
 import expert.rightperception.attributesapp.data.repository.license.LicenseRepository
-import expert.rightperception.attributesapp.domain.model.objects.ObjectsContainer
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.breffi.story.domain.bridge.model.AppUpdatesProvider
@@ -16,28 +19,24 @@ import ru.rightperception.storyattributes.api.StoryAttributes
 import ru.rightperception.storyattributes.api.model.StoryAttributesSettings
 import ru.rightperception.storyattributes.domain.model.AttributeModel
 import ru.rightperception.storyattributes.domain.model.ValidatedAttributeModel
-import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class StoryObjectRepository @Inject constructor(
-    private val app: App,
-    private val preferencesStorage: PreferencesStorage,
+class TestObjectRepository @Inject constructor(
+    app: App,
     private val licenseRepository: LicenseRepository
 ) : AppUpdatesProvider, ContentUpdatesReceiver {
 
-    private val storyObjectFile = File(app.filesDir.absolutePath, "storyObject.txt").apply {
-        if (!exists()) {
-            createNewFile()
-        }
+    companion object {
+
+        private const val WRAPPER_KEY = "debugAppState"
     }
 
-    private var storyAttributes = StoryAttributes.create(app, StoryAttributesSettings(preferencesStorage.getAttributesEndpoint()))
+    private val storyAttributes = StoryAttributes.create(app, StoryAttributesSettings(PreferencesStorage.DEFAULT_ATTRIBUTES_ENDPOINT))
 
-    private val objectStateFlow = MutableSharedFlow<String>(1)
+    private val testObjectStateFlow = MutableSharedFlow<JsonObject>(1)
 
-    private val objectsContainerStateFlow = MutableSharedFlow<ObjectsContainer>(1)
     private val mutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
@@ -45,78 +44,38 @@ class StoryObjectRepository @Inject constructor(
 
     init {
         scope.launch {
-            objectsContainerStateFlow.collect {
+            testObjectStateFlow.collect {
                 listener?.onUpdate(contextObject = it)
             }
         }
     }
 
-    suspend fun saveObject(objectString: String) {
-        mutex.withLock {
-            withContext(Dispatchers.IO) {
-                storyObjectFile.writeText(objectString)
-                objectStateFlow.emit(objectString)
-            }
-        }
-    }
-
-    fun observeObject(): Flow<String> {
-        return objectStateFlow
-            .onStart {
-                emit(getObject())
-            }
-    }
-
-    suspend fun getObject(): String {
-        return withContext(Dispatchers.IO) {
-            storyObjectFile.readText()
-        }
-    }
-
-    //attributes
-
-    fun setAttributesEndpoint(endpoint: String) {
-        if (preferencesStorage.getAttributesEndpoint() != endpoint) {
-            preferencesStorage.setAttributesEndpoint(endpoint)
-            storyAttributes = StoryAttributes.create(app, StoryAttributesSettings(endpoint))
-        }
-    }
-
-    fun getAttributesEndpoint(): String {
-        return preferencesStorage.getAttributesEndpoint()
-    }
-
-    suspend fun setAttributes(objectsContainer: ObjectsContainer) {
+    suspend fun saveTestObject(jsonObject: JsonObject) {
         withLicenseId { rootParentId ->
             mutex.withLock {
-                storyAttributes.getStorageApi().putObject(rootParentId, objectsContainer)
-                objectsContainerStateFlow.emit(objectsContainer)
+                val wrappedJsonObject = JsonObject().apply {
+                    add(WRAPPER_KEY, jsonObject)
+                }
+                storyAttributes.getStorageApi().putJson(rootParentId, wrappedJsonObject)
+                storyAttributes.getStorageApi().getJsonByParentId(rootParentId).getAsJsonObject(WRAPPER_KEY)?.let {
+                    testObjectStateFlow.emit(it)
+                }
             }
         }
     }
 
-    suspend fun deleteFormItemAttributes(key: String) {
-        modifyAttribute(listOf("form", "item", key)) {
-            storyAttributes.getStorageApi().deleteById(it.id)
-        }
-    }
-
-    fun observeAttributes(): Flow<ObjectsContainer> {
-        return objectsContainerStateFlow
+    fun observeTestObject(): Flow<JsonObject> {
+        return testObjectStateFlow
             .onStart {
-                getAttributes()?.let {
+                getTestObject()?.let {
                     emit(it)
                 }
             }
     }
 
-    suspend fun getAttributes(): ObjectsContainer? {
+    suspend fun getTestObject(): JsonObject? {
         return withLicenseId { rootParentId ->
-            if (storyAttributes.getStorageApi().getByParentId(rootParentId).isEmpty()) {
-                ObjectsContainer()
-            } else {
-                storyAttributes.getStorageApi().getObjectByParentId(rootParentId, ObjectsContainer::class.java)
-            }
+            storyAttributes.getStorageApi().getJsonByParentId(rootParentId).getAsJsonObject(WRAPPER_KEY) ?: JsonObject()
         }
     }
 
@@ -175,7 +134,9 @@ class StoryObjectRepository @Inject constructor(
                     }?.let { attr ->
                         block(attr)
                     }
-                    objectsContainerStateFlow.emit(storyAttributes.getStorageApi().getObjectByParentId(rootParentId, ObjectsContainer::class.java))
+                    storyAttributes.getStorageApi().getJsonByParentId(rootParentId).getAsJsonObject(WRAPPER_KEY)?.let {
+                        testObjectStateFlow.emit(it)
+                    }
                 }
             }
         }
