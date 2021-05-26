@@ -1,0 +1,139 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "expert.rightperception.story",
+    "module": "storyattributes",
+    "version": "0.5.2",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "6.5",
+      "buildId": "kggzsayjczebzgjz4koep7hmhy"
+    }
+  },
+  "variants": [
+    {
+      "name": "runtime",
+      "attributes": {
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-android-extensions-runtime",
+          "version": {
+            "requires": "1.4.10"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.4.10"
+          }
+        },
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.3.2"
+          }
+        },
+        {
+          "group": "androidx.appcompat",
+          "module": "appcompat",
+          "version": {
+            "requires": "1.2.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-core",
+          "version": {
+            "requires": "1.4.1"
+          }
+        },
+        {
+          "group": "com.google.code.gson",
+          "module": "gson",
+          "version": {
+            "requires": "2.8.6"
+          }
+        },
+        {
+          "group": "com.squareup.retrofit2",
+          "module": "retrofit",
+          "version": {
+            "requires": "2.9.0"
+          }
+        },
+        {
+          "group": "com.squareup.retrofit2",
+          "module": "converter-gson",
+          "version": {
+            "requires": "2.9.0"
+          }
+        },
+        {
+          "group": "com.jakewharton.retrofit",
+          "module": "retrofit2-kotlin-coroutines-adapter",
+          "version": {
+            "requires": "0.9.2"
+          }
+        },
+        {
+          "group": "com.squareup.okhttp3",
+          "module": "logging-interceptor",
+          "version": {
+            "requires": "4.9.0"
+          }
+        },
+        {
+          "group": "androidx.room",
+          "module": "room-runtime",
+          "version": {
+            "requires": "2.2.6"
+          }
+        },
+        {
+          "group": "androidx.room",
+          "module": "room-ktx",
+          "version": {
+            "requires": "2.2.6"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "storyattributes-0.5.2.aar",
+          "url": "storyattributes-0.5.2.aar",
+          "size": 246358,
+          "sha512": "81dd8f1ccca62f1472dda5ccca35aeb8bae0ba1dea8e53ee4eca4314b17909a18eec5e4eba21a7611d5287ddc109c062bb390baae4f084b4ed5858c5266643ed",
+          "sha256": "d7119b8e128d0a9a5554aa7ed51d1351692d84622a3076e6ac1bcd9b7823f84a",
+          "sha1": "76366e5d3bf9fce732f3b5302a499eb43ac5d5a6",
+          "md5": "da5c6515c8c309611e49d7741792b2f1"
+        }
+      ]
+    },
+    {
+      "name": "api",
+      "attributes": {
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "storyattributes-0.5.2.aar",
+          "url": "storyattributes-0.5.2.aar",
+          "size": 246358,
+          "sha512": "81dd8f1ccca62f1472dda5ccca35aeb8bae0ba1dea8e53ee4eca4314b17909a18eec5e4eba21a7611d5287ddc109c062bb390baae4f084b4ed5858c5266643ed",
+          "sha256": "d7119b8e128d0a9a5554aa7ed51d1351692d84622a3076e6ac1bcd9b7823f84a",
+          "sha1": "76366e5d3bf9fce732f3b5302a499eb43ac5d5a6",
+          "md5": "da5c6515c8c309611e49d7741792b2f1"
+        }
+      ]
+    }
+  ]
+}
