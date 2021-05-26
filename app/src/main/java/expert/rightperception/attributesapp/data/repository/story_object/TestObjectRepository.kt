@@ -1,5 +1,6 @@
 package expert.rightperception.attributesapp.data.repository.story_object
 
+import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import expert.rightperception.attributesapp.App
 import expert.rightperception.attributesapp.data.repository.license.LicenseRepository
@@ -17,23 +18,22 @@ import ru.breffi.story.domain.bridge.model.AppUpdatesProvider
 import ru.breffi.story.domain.bridge.model.ContentUpdatesReceiver
 import ru.rightperception.storyattributes.api.StoryAttributes
 import ru.rightperception.storyattributes.api.model.StoryAttributesSettings
-import ru.rightperception.storyattributes.domain.model.AttributeModel
-import ru.rightperception.storyattributes.domain.model.ValidatedAttributeModel
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class TestObjectRepository @Inject constructor(
     app: App,
-    private val licenseRepository: LicenseRepository
-) : AppUpdatesProvider, ContentUpdatesReceiver {
+    licenseRepository: LicenseRepository
+) : BaseAttributesRepository(
+    StoryAttributes.create(app, StoryAttributesSettings(PreferencesStorage.DEFAULT_ATTRIBUTES_ENDPOINT)),
+    licenseRepository
+), AppUpdatesProvider, ContentUpdatesReceiver {
 
     companion object {
 
         private const val WRAPPER_KEY = "debugAppState"
     }
-
-    private val storyAttributes = StoryAttributes.create(app, StoryAttributesSettings(PreferencesStorage.DEFAULT_ATTRIBUTES_ENDPOINT))
 
     private val testObjectStateFlow = MutableSharedFlow<JsonObject>(1)
 
@@ -57,9 +57,7 @@ class TestObjectRepository @Inject constructor(
                     add(WRAPPER_KEY, jsonObject)
                 }
                 storyAttributes.getStorageApi().putJson(rootParentId, wrappedJsonObject)
-                storyAttributes.getStorageApi().getJsonByParentId(rootParentId).getAsJsonObject(WRAPPER_KEY)?.let {
-                    testObjectStateFlow.emit(it)
-                }
+                sendUpdate(rootParentId)
             }
         }
     }
@@ -75,13 +73,28 @@ class TestObjectRepository @Inject constructor(
 
     suspend fun getTestObject(): JsonObject? {
         return withLicenseId { rootParentId ->
-            storyAttributes.getStorageApi().getJsonByParentId(rootParentId).getAsJsonObject(WRAPPER_KEY) ?: JsonObject()
+            val element = storyAttributes.getStorageApi().getJsonByParentId(rootParentId).get(WRAPPER_KEY)
+            if (element == null || element == JsonNull.INSTANCE) {
+                JsonObject()
+            } else {
+                element.asJsonObject
+            }
         }
     }
 
     override fun deleteProperty(pathKeys: List<String>) {
-        modifyAttribute(pathKeys) {
-            storyAttributes.getStorageApi().deleteById(it.id)
+        scope.launch {
+            withLicenseId { rootParentId ->
+                mutex.withLock {
+                    val attrs = storyAttributes.getStorageApi().getByParentId(rootParentId)
+                    pathKeys.fold(attrs.get(WRAPPER_KEY)) { acc, key ->
+                        acc?.get(key)
+                    }?.let { attr ->
+                        storyAttributes.getStorageApi().deleteById(attr.id)
+                    }
+                    sendUpdate(rootParentId)
+                }
+            }
         }
     }
 
@@ -109,42 +122,22 @@ class TestObjectRepository @Inject constructor(
         listener = updateListener
     }
 
-    fun List<ValidatedAttributeModel>.get(key: String): ValidatedAttributeModel? {
-        return firstOrNull { it.key == key }
-    }
-
     private fun setValue(pathKeys: List<String>, value: Any?) {
-        modifyAttribute(pathKeys) { validatedAttr ->
-            val attributeModel = AttributeModel(
-                key = validatedAttr.key,
-                parentId = validatedAttr.parentId,
-                value = value
-            )
-            storyAttributes.getStorageApi().putAttributes(listOf(attributeModel))
-        }
-    }
-
-    private fun modifyAttribute(pathKeys: List<String>, block: suspend (attributeModel: ValidatedAttributeModel) -> Unit) {
         scope.launch {
             withLicenseId { rootParentId ->
                 mutex.withLock {
                     val attrs = storyAttributes.getStorageApi().getByParentId(rootParentId)
-                    pathKeys.subList(1, pathKeys.size).fold(attrs.get(pathKeys[0])) { acc, key ->
-                        acc?.get(key)
-                    }?.let { attr ->
-                        block(attr)
-                    }
-                    storyAttributes.getStorageApi().getJsonByParentId(rootParentId).getAsJsonObject(WRAPPER_KEY)?.let {
-                        testObjectStateFlow.emit(it)
-                    }
+                    set(rootParentId, attrs, listOf(WRAPPER_KEY).plus(pathKeys), value)
+                    sendUpdate(rootParentId)
                 }
             }
         }
     }
 
-    private suspend fun <T : Any> withLicenseId(block: suspend (attributeModel: String) -> T?): T? {
-        return licenseRepository.getLicense()?.id?.let { rootParentId ->
-            block(rootParentId)
+    private suspend fun sendUpdate(rootParentId: String) {
+        val element = storyAttributes.getStorageApi().getJsonByParentId(rootParentId).get(WRAPPER_KEY)
+        if (element != null && element != JsonNull.INSTANCE) {
+            testObjectStateFlow.emit(element.asJsonObject)
         }
     }
 }
