@@ -20,7 +20,7 @@ class ContentViewModel @Inject constructor(
     fun getInitialData(): LiveData<ContentDataModel> {
         viewModelScope.launch {
             initialStoryObjectLiveData.value = ContentDataModel(
-                presentationContext = presentationContextRepository.getPresenationContext(),
+                presentationContext = presentationContextRepository.getPresentationContext(),
                 testObject = testObjectRepository.getTestObject()
             )
         }

@@ -26,12 +26,13 @@ import javax.inject.Singleton
 class PresentationContextRepository @Inject constructor(
     private val app: App,
     private val preferencesStorage: PreferencesStorage,
-    private val licenseRepository: LicenseRepository
-) : AppUpdatesProvider, ContentUpdatesReceiver {
+    licenseRepository: LicenseRepository
+) : BaseAttributesRepository(
+    StoryAttributes.create(app, StoryAttributesSettings(preferencesStorage.getAttributesEndpoint())),
+    licenseRepository
+), AppUpdatesProvider, ContentUpdatesReceiver {
 
-    private var storyAttributes = StoryAttributes.create(app, StoryAttributesSettings(preferencesStorage.getAttributesEndpoint()))
-
-    private val objectsContainerStateFlow = MutableSharedFlow<PresentationContext>(1)
+    private val presentationContextStateFlow = MutableSharedFlow<PresentationContext>(1)
     private val mutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
@@ -39,7 +40,7 @@ class PresentationContextRepository @Inject constructor(
 
     init {
         scope.launch {
-            objectsContainerStateFlow.collect {
+            presentationContextStateFlow.collect {
                 listener?.onUpdate(contextObject = it)
             }
         }
@@ -60,27 +61,27 @@ class PresentationContextRepository @Inject constructor(
         withLicenseId { rootParentId ->
             mutex.withLock {
                 storyAttributes.getStorageApi().putObject(rootParentId, presentationContext)
-                objectsContainerStateFlow.emit(presentationContext)
+                presentationContextStateFlow.emit(presentationContext)
             }
         }
     }
 
     suspend fun deleteFormItem(key: String) {
-        modifyAttribute(listOf("form", "item", key)) {
+        modifyAttribute(listOf("form", "items", key)) {
             storyAttributes.getStorageApi().deleteById(it.id)
         }
     }
 
     fun observePresentationContext(): Flow<PresentationContext> {
-        return objectsContainerStateFlow
+        return presentationContextStateFlow
             .onStart {
-                getPresenationContext()?.let {
+                getPresentationContext()?.let {
                     emit(it)
                 }
             }
     }
 
-    suspend fun getPresenationContext(): PresentationContext? {
+    suspend fun getPresentationContext(): PresentationContext? {
         return withLicenseId { rootParentId ->
             if (storyAttributes.getStorageApi().getByParentId(rootParentId).isEmpty()) {
                 PresentationContext()
@@ -120,10 +121,6 @@ class PresentationContextRepository @Inject constructor(
         listener = updateListener
     }
 
-    fun List<ValidatedAttributeModel>.get(key: String): ValidatedAttributeModel? {
-        return firstOrNull { it.key == key }
-    }
-
     private fun setValue(pathKeys: List<String>, value: Any?) {
         modifyAttribute(pathKeys) { validatedAttr ->
             val attributeModel = AttributeModel(
@@ -145,15 +142,9 @@ class PresentationContextRepository @Inject constructor(
                     }?.let { attr ->
                         block(attr)
                     }
-                    objectsContainerStateFlow.emit(storyAttributes.getStorageApi().getObjectByParentId(rootParentId, PresentationContext::class.java))
+                    presentationContextStateFlow.emit(storyAttributes.getStorageApi().getObjectByParentId(rootParentId, PresentationContext::class.java))
                 }
             }
-        }
-    }
-
-    private suspend fun <T : Any> withLicenseId(block: suspend (attributeModel: String) -> T?): T? {
-        return licenseRepository.getLicense()?.id?.let { rootParentId ->
-            block(rootParentId)
         }
     }
 }
