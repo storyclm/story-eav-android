@@ -3,22 +3,20 @@ package expert.rightperception.attributesapp.data.repository.story_object
 import expert.rightperception.attributesapp.App
 import expert.rightperception.attributesapp.data.repository.license.LicenseRepository
 import expert.rightperception.attributesapp.domain.model.objects.PresentationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.breffi.story.domain.bridge.model.AppUpdatesProvider
 import ru.breffi.story.domain.bridge.model.ContentUpdatesReceiver
-import ru.rightperception.storyattributes.api.StoryAttributes
-import ru.rightperception.storyattributes.api.model.StoryAttributesSettings
 import ru.rightperception.storyattributes.domain.model.AttributeModel
 import ru.rightperception.storyattributes.domain.model.ValidatedAttributeModel
+import ru.rightperception.storyattributes.external_api.StoryAttributesService
+import ru.rightperception.storyattributes.external_api.model.StoryAttributesSettings
+import ru.rightperception.storyattributes.utility.asObject
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,17 +26,32 @@ class PresentationContextRepository @Inject constructor(
     private val preferencesStorage: PreferencesStorage,
     licenseRepository: LicenseRepository
 ) : BaseAttributesRepository(
-    StoryAttributes.create(app, StoryAttributesSettings(preferencesStorage.getAttributesEndpoint())),
+    StoryAttributesService.create(
+        app,
+        StoryAttributesSettings(
+            preferencesStorage.getAttributesEndpoint(),
+            autoSynchronizationEnabled = AUTO_SYNCHRONIZATION_ENABLED,
+            autoSynchronizationIntervalMillis = SYNCHRONIZATION_INTERVAL_MS
+        )
+    ),
     licenseRepository
 ), AppUpdatesProvider, ContentUpdatesReceiver {
+
+    companion object {
+        const val SYNCHRONIZATION_INTERVAL_MS = 5 * 60 * 1000L
+        const val AUTO_SYNCHRONIZATION_ENABLED = true
+    }
 
     private val presentationContextStateFlow = MutableSharedFlow<PresentationContext>(1)
     private val mutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
+    private var syncJob: Job? = null
+
     private var listener: AppUpdatesProvider.UpdateListener? = null
 
     init {
+        createSyncJob()
         scope.launch {
             presentationContextStateFlow.collect {
                 listener?.onUpdate(contextObject = it)
@@ -46,10 +59,32 @@ class PresentationContextRepository @Inject constructor(
         }
     }
 
+    private fun createSyncJob() {
+        syncJob?.cancel()
+        syncJob = scope.launch {
+            withLicenseId { licenseId ->
+                storyAttributes.getSynchronizationApi().observeSynchronizationSuccess(licenseId)
+                    .collect { attrs ->
+                        if (attrs.any { it.key == "notes" }) {
+                            presentationContextStateFlow.emit(attrs.asObject(licenseId, PresentationContext::class.java))
+                        }
+                    }
+            }
+        }
+    }
+
     fun setAttributesEndpoint(endpoint: String) {
         if (preferencesStorage.getAttributesEndpoint() != endpoint) {
             preferencesStorage.setAttributesEndpoint(endpoint)
-            storyAttributes = StoryAttributes.create(app, StoryAttributesSettings(endpoint))
+            storyAttributes = StoryAttributesService.create(
+                app,
+                StoryAttributesSettings(
+                    endpoint,
+                    autoSynchronizationEnabled = AUTO_SYNCHRONIZATION_ENABLED,
+                    autoSynchronizationIntervalMillis = SYNCHRONIZATION_INTERVAL_MS
+                )
+            )
+            createSyncJob()
         }
     }
 
@@ -58,9 +93,9 @@ class PresentationContextRepository @Inject constructor(
     }
 
     suspend fun setPresentationContext(presentationContext: PresentationContext) {
-        withLicenseId { rootParentId ->
+        withLicenseId { licenseId ->
             mutex.withLock {
-                storyAttributes.getStorageApi().putObject(rootParentId, presentationContext)
+                storyAttributes.getStorageApi().putObject(licenseId, presentationContext)
                 presentationContextStateFlow.emit(presentationContext)
             }
         }
@@ -82,11 +117,13 @@ class PresentationContextRepository @Inject constructor(
     }
 
     suspend fun getPresentationContext(): PresentationContext? {
-        return withLicenseId { rootParentId ->
-            if (storyAttributes.getStorageApi().getByParentId(rootParentId).isEmpty()) {
-                PresentationContext()
+        return withLicenseId { licenseId ->
+            val attrs = storyAttributes.getStorageApi().getByParentId(licenseId)
+            if (attrs.any { it.key == "notes" }) {
+                attrs.asObject(licenseId, PresentationContext::class.java)
             } else {
-                storyAttributes.getStorageApi().getObjectByParentId(rootParentId, PresentationContext::class.java)
+                storyAttributes.getStorageApi().putObject(licenseId, PresentationContext())
+                storyAttributes.getStorageApi().getObjectByParentId(licenseId, PresentationContext::class.java)
             }
         }
     }
@@ -134,15 +171,15 @@ class PresentationContextRepository @Inject constructor(
 
     private fun modifyAttribute(pathKeys: List<String>, block: suspend (attributeModel: ValidatedAttributeModel) -> Unit) {
         scope.launch {
-            withLicenseId { rootParentId ->
+            withLicenseId { licenseId ->
                 mutex.withLock {
-                    val attrs = storyAttributes.getStorageApi().getByParentId(rootParentId)
+                    val attrs = storyAttributes.getStorageApi().getByParentId(licenseId)
                     pathKeys.subList(1, pathKeys.size).fold(attrs.get(pathKeys[0])) { acc, key ->
                         acc?.get(key)
                     }?.let { attr ->
                         block(attr)
                     }
-                    presentationContextStateFlow.emit(storyAttributes.getStorageApi().getObjectByParentId(rootParentId, PresentationContext::class.java))
+                    presentationContextStateFlow.emit(storyAttributes.getStorageApi().getObjectByParentId(licenseId, PresentationContext::class.java))
                 }
             }
         }

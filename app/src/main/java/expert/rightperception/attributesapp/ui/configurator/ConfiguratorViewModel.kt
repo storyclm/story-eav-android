@@ -5,6 +5,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import expert.rightperception.attributesapp.data.repository.story_object.PresentationContextRepository
 import expert.rightperception.attributesapp.domain.model.objects.PresentationContext
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -13,6 +14,7 @@ class ConfiguratorViewModel @Inject constructor(
 ) : ViewModel() {
 
     val uiModel = presentationContextRepository.observePresentationContext()
+        .distinctUntilChanged()
         .asLiveData()
 
     fun getAttributesEndpoint(): String {

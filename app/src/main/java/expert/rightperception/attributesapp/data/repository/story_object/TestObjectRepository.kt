@@ -16,8 +16,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.breffi.story.domain.bridge.model.AppUpdatesProvider
 import ru.breffi.story.domain.bridge.model.ContentUpdatesReceiver
-import ru.rightperception.storyattributes.api.StoryAttributes
-import ru.rightperception.storyattributes.api.model.StoryAttributesSettings
+import ru.rightperception.storyattributes.external_api.StoryAttributesService
+import ru.rightperception.storyattributes.external_api.model.StoryAttributesSettings
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,7 +26,7 @@ class TestObjectRepository @Inject constructor(
     app: App,
     licenseRepository: LicenseRepository
 ) : BaseAttributesRepository(
-    StoryAttributes.create(app, StoryAttributesSettings(PreferencesStorage.DEFAULT_ATTRIBUTES_ENDPOINT)),
+    StoryAttributesService.create(app, StoryAttributesSettings(PreferencesStorage.DEFAULT_ATTRIBUTES_ENDPOINT)),
     licenseRepository
 ), AppUpdatesProvider, ContentUpdatesReceiver {
 

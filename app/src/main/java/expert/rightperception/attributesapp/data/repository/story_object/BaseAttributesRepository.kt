@@ -1,12 +1,12 @@
 package expert.rightperception.attributesapp.data.repository.story_object
 
 import expert.rightperception.attributesapp.data.repository.license.LicenseRepository
-import ru.rightperception.storyattributes.api.StoryAttributes
 import ru.rightperception.storyattributes.domain.model.AttributeModel
 import ru.rightperception.storyattributes.domain.model.ValidatedAttributeModel
+import ru.rightperception.storyattributes.external_api.StoryAttributesService
 
 open class BaseAttributesRepository(
-    var storyAttributes: StoryAttributes,
+    var storyAttributes: StoryAttributesService,
     private val licenseRepository: LicenseRepository
 ) {
 
