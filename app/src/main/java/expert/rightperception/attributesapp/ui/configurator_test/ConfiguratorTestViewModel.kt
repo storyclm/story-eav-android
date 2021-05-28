@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import expert.rightperception.attributesapp.data.repository.story_object.TestObjectRepository
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -15,6 +16,7 @@ class ConfiguratorTestViewModel @Inject constructor(
 
     val testObject = testObjectRepository
         .observeTestObject()
+        .distinctUntilChanged()
         .asLiveData()
 
     fun saveTestObject(objectString: String) {
