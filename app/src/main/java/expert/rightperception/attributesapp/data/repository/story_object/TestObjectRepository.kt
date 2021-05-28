@@ -2,31 +2,27 @@ package expert.rightperception.attributesapp.data.repository.story_object
 
 import com.google.gson.JsonNull
 import com.google.gson.JsonObject
-import expert.rightperception.attributesapp.App
 import expert.rightperception.attributesapp.data.repository.license.LicenseRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.breffi.story.domain.bridge.model.AppUpdatesProvider
 import ru.breffi.story.domain.bridge.model.ContentUpdatesReceiver
-import ru.rightperception.storyattributes.external_api.StoryAttributesService
-import ru.rightperception.storyattributes.external_api.model.StoryAttributesSettings
+import ru.rightperception.storyattributes.utility.asJson
+import ru.rightperception.storyattributes.utility.get
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class TestObjectRepository @Inject constructor(
-    app: App,
+    attributesServiceRepository: AttributesServiceRepository,
     licenseRepository: LicenseRepository
 ) : BaseAttributesRepository(
-    StoryAttributesService.create(app, StoryAttributesSettings(PreferencesStorage.DEFAULT_ATTRIBUTES_ENDPOINT)),
+    attributesServiceRepository,
     licenseRepository
 ), AppUpdatesProvider, ContentUpdatesReceiver {
 
@@ -40,9 +36,12 @@ class TestObjectRepository @Inject constructor(
     private val mutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
+    private var syncJob: Job? = null
+
     private var listener: AppUpdatesProvider.UpdateListener? = null
 
     init {
+        createSyncJob()
         scope.launch {
             testObjectStateFlow.collect {
                 listener?.onUpdate(contextObject = it)
@@ -56,7 +55,7 @@ class TestObjectRepository @Inject constructor(
                 val wrappedJsonObject = JsonObject().apply {
                     add(WRAPPER_KEY, jsonObject)
                 }
-                storyAttributes.getStorageApi().putJson(rootParentId, wrappedJsonObject)
+                attributesServiceRepository.getActiveService().getStorageApi().putJson(rootParentId, wrappedJsonObject)
                 sendUpdate(rootParentId)
             }
         }
@@ -73,7 +72,7 @@ class TestObjectRepository @Inject constructor(
 
     suspend fun getTestObject(): JsonObject? {
         return withLicenseId { rootParentId ->
-            val element = storyAttributes.getStorageApi().getJsonByParentId(rootParentId).get(WRAPPER_KEY)
+            val element = attributesServiceRepository.getActiveService().getStorageApi().getJsonByParentId(rootParentId).get(WRAPPER_KEY)
             if (element == null || element == JsonNull.INSTANCE) {
                 JsonObject()
             } else {
@@ -86,11 +85,11 @@ class TestObjectRepository @Inject constructor(
         scope.launch {
             withLicenseId { rootParentId ->
                 mutex.withLock {
-                    val attrs = storyAttributes.getStorageApi().getByParentId(rootParentId)
-                    pathKeys.fold(attrs.get(WRAPPER_KEY)) { acc, key ->
+                    val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(rootParentId)
+                    pathKeys.fold(attrs[WRAPPER_KEY]) { acc, key ->
                         acc?.get(key)
                     }?.let { attr ->
-                        storyAttributes.getStorageApi().deleteById(attr.id)
+                        attributesServiceRepository.getActiveService().getStorageApi().deleteById(attr.id)
                     }
                     sendUpdate(rootParentId)
                 }
@@ -118,7 +117,7 @@ class TestObjectRepository @Inject constructor(
         setValue(pathKeys, null)
     }
 
-    override fun setUpdateListener(updateListener: AppUpdatesProvider.UpdateListener) {
+    override fun setUpdateListener(updateListener: AppUpdatesProvider.UpdateListener?) {
         listener = updateListener
     }
 
@@ -126,7 +125,7 @@ class TestObjectRepository @Inject constructor(
         scope.launch {
             withLicenseId { rootParentId ->
                 mutex.withLock {
-                    val attrs = storyAttributes.getStorageApi().getByParentId(rootParentId)
+                    val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(rootParentId)
                     set(rootParentId, attrs, listOf(WRAPPER_KEY).plus(pathKeys), value)
                     sendUpdate(rootParentId)
                 }
@@ -135,9 +134,23 @@ class TestObjectRepository @Inject constructor(
     }
 
     private suspend fun sendUpdate(rootParentId: String) {
-        val element = storyAttributes.getStorageApi().getJsonByParentId(rootParentId).get(WRAPPER_KEY)
+        val element = attributesServiceRepository.getActiveService().getStorageApi().getJsonByParentId(rootParentId).get(WRAPPER_KEY)
         if (element != null && element != JsonNull.INSTANCE) {
             testObjectStateFlow.emit(element.asJsonObject)
+        }
+    }
+
+    private fun createSyncJob() {
+        syncJob?.cancel()
+        syncJob = scope.launch {
+            withLicenseId { licenseId ->
+                attributesServiceRepository.getActiveService().getSynchronizationApi().observeSynchronizationSuccess(licenseId)
+                    .collect { attrs ->
+                        attrs.find { it.key == WRAPPER_KEY }?.let { objAttr ->
+                            testObjectStateFlow.emit(objAttr.attributes.asJson(objAttr.id))
+                        }
+                    }
+            }
         }
     }
 }

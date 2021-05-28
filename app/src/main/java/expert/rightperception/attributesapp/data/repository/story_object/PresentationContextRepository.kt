@@ -1,6 +1,5 @@
 package expert.rightperception.attributesapp.data.repository.story_object
 
-import expert.rightperception.attributesapp.App
 import expert.rightperception.attributesapp.data.repository.license.LicenseRepository
 import expert.rightperception.attributesapp.domain.model.objects.PresentationContext
 import kotlinx.coroutines.*
@@ -14,26 +13,18 @@ import ru.breffi.story.domain.bridge.model.AppUpdatesProvider
 import ru.breffi.story.domain.bridge.model.ContentUpdatesReceiver
 import ru.rightperception.storyattributes.domain.model.AttributeModel
 import ru.rightperception.storyattributes.domain.model.ValidatedAttributeModel
-import ru.rightperception.storyattributes.external_api.StoryAttributesService
-import ru.rightperception.storyattributes.external_api.model.StoryAttributesSettings
 import ru.rightperception.storyattributes.utility.asObject
+import ru.rightperception.storyattributes.utility.get
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class PresentationContextRepository @Inject constructor(
-    private val app: App,
     private val preferencesStorage: PreferencesStorage,
+    attributesServiceRepository: AttributesServiceRepository,
     licenseRepository: LicenseRepository
 ) : BaseAttributesRepository(
-    StoryAttributesService.create(
-        app,
-        StoryAttributesSettings(
-            preferencesStorage.getAttributesEndpoint(),
-            autoSynchronizationEnabled = AUTO_SYNCHRONIZATION_ENABLED,
-            autoSynchronizationIntervalMillis = SYNCHRONIZATION_INTERVAL_MS
-        )
-    ),
+    attributesServiceRepository,
     licenseRepository
 ), AppUpdatesProvider, ContentUpdatesReceiver {
 
@@ -59,31 +50,8 @@ class PresentationContextRepository @Inject constructor(
         }
     }
 
-    private fun createSyncJob() {
-        syncJob?.cancel()
-        syncJob = scope.launch {
-            withLicenseId { licenseId ->
-                storyAttributes.getSynchronizationApi().observeSynchronizationSuccess(licenseId)
-                    .collect { attrs ->
-                        if (attrs.any { it.key == "notes" }) {
-                            presentationContextStateFlow.emit(attrs.asObject(licenseId, PresentationContext::class.java))
-                        }
-                    }
-            }
-        }
-    }
-
     fun setAttributesEndpoint(endpoint: String) {
-        if (preferencesStorage.getAttributesEndpoint() != endpoint) {
-            preferencesStorage.setAttributesEndpoint(endpoint)
-            storyAttributes = StoryAttributesService.create(
-                app,
-                StoryAttributesSettings(
-                    endpoint,
-                    autoSynchronizationEnabled = AUTO_SYNCHRONIZATION_ENABLED,
-                    autoSynchronizationIntervalMillis = SYNCHRONIZATION_INTERVAL_MS
-                )
-            )
+        if (attributesServiceRepository.recreateWithEndpoint(endpoint)) {
             createSyncJob()
         }
     }
@@ -95,7 +63,7 @@ class PresentationContextRepository @Inject constructor(
     suspend fun setPresentationContext(presentationContext: PresentationContext) {
         withLicenseId { licenseId ->
             mutex.withLock {
-                storyAttributes.getStorageApi().putObject(licenseId, presentationContext)
+                attributesServiceRepository.getActiveService().getStorageApi().putObject(licenseId, presentationContext)
                 presentationContextStateFlow.emit(presentationContext)
             }
         }
@@ -103,7 +71,7 @@ class PresentationContextRepository @Inject constructor(
 
     suspend fun deleteFormItem(key: String) {
         modifyAttribute(listOf("form", "items", key)) {
-            storyAttributes.getStorageApi().deleteById(it.id)
+            attributesServiceRepository.getActiveService().getStorageApi().deleteById(it.id)
         }
     }
 
@@ -118,19 +86,19 @@ class PresentationContextRepository @Inject constructor(
 
     suspend fun getPresentationContext(): PresentationContext? {
         return withLicenseId { licenseId ->
-            val attrs = storyAttributes.getStorageApi().getByParentId(licenseId)
+            val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(licenseId)
             if (attrs.any { it.key == "notes" }) {
                 attrs.asObject(licenseId, PresentationContext::class.java)
             } else {
-                storyAttributes.getStorageApi().putObject(licenseId, PresentationContext())
-                storyAttributes.getStorageApi().getObjectByParentId(licenseId, PresentationContext::class.java)
+                attributesServiceRepository.getActiveService().getStorageApi().putObject(licenseId, PresentationContext())
+                attributesServiceRepository.getActiveService().getStorageApi().getObjectByParentId(licenseId, PresentationContext::class.java)
             }
         }
     }
 
     override fun deleteProperty(pathKeys: List<String>) {
         modifyAttribute(pathKeys) {
-            storyAttributes.getStorageApi().deleteById(it.id)
+            attributesServiceRepository.getActiveService().getStorageApi().deleteById(it.id)
         }
     }
 
@@ -154,7 +122,7 @@ class PresentationContextRepository @Inject constructor(
         setValue(pathKeys, null)
     }
 
-    override fun setUpdateListener(updateListener: AppUpdatesProvider.UpdateListener) {
+    override fun setUpdateListener(updateListener: AppUpdatesProvider.UpdateListener?) {
         listener = updateListener
     }
 
@@ -165,7 +133,7 @@ class PresentationContextRepository @Inject constructor(
                 parentId = validatedAttr.parentId,
                 value = value
             )
-            storyAttributes.getStorageApi().putAttributes(listOf(attributeModel))
+            attributesServiceRepository.getActiveService().getStorageApi().putAttributes(listOf(attributeModel))
         }
     }
 
@@ -173,14 +141,28 @@ class PresentationContextRepository @Inject constructor(
         scope.launch {
             withLicenseId { licenseId ->
                 mutex.withLock {
-                    val attrs = storyAttributes.getStorageApi().getByParentId(licenseId)
-                    pathKeys.subList(1, pathKeys.size).fold(attrs.get(pathKeys[0])) { acc, key ->
+                    val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(licenseId)
+                    pathKeys.subList(1, pathKeys.size).fold(attrs[pathKeys[0]]) { acc, key ->
                         acc?.get(key)
                     }?.let { attr ->
                         block(attr)
                     }
-                    presentationContextStateFlow.emit(storyAttributes.getStorageApi().getObjectByParentId(licenseId, PresentationContext::class.java))
+                    presentationContextStateFlow.emit(attributesServiceRepository.getActiveService().getStorageApi().getObjectByParentId(licenseId, PresentationContext::class.java))
                 }
+            }
+        }
+    }
+
+    private fun createSyncJob() {
+        syncJob?.cancel()
+        syncJob = scope.launch {
+            withLicenseId { licenseId ->
+                attributesServiceRepository.getActiveService().getSynchronizationApi().observeSynchronizationSuccess(licenseId)
+                    .collect { attrs ->
+                        if (attrs.any { it.key == "notes" }) {
+                            presentationContextStateFlow.emit(attrs.asObject(licenseId, PresentationContext::class.java))
+                        }
+                    }
             }
         }
     }

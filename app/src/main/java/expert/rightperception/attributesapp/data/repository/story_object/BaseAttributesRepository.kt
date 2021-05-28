@@ -3,10 +3,10 @@ package expert.rightperception.attributesapp.data.repository.story_object
 import expert.rightperception.attributesapp.data.repository.license.LicenseRepository
 import ru.rightperception.storyattributes.domain.model.AttributeModel
 import ru.rightperception.storyattributes.domain.model.ValidatedAttributeModel
-import ru.rightperception.storyattributes.external_api.StoryAttributesService
+import ru.rightperception.storyattributes.utility.get
 
 open class BaseAttributesRepository(
-    var storyAttributes: StoryAttributesService,
+    var attributesServiceRepository: AttributesServiceRepository,
     private val licenseRepository: LicenseRepository
 ) {
 
@@ -14,10 +14,10 @@ open class BaseAttributesRepository(
         if (pathKeys.isNotEmpty()) {
             var lastParentId = parentId
             var i = 0
-            var attr = attrs.get(pathKeys[i])
+            var attr = attrs[pathKeys[i]]
             while (attr != null && i < pathKeys.size - 1) {
                 lastParentId = attr.id
-                attr = attr.get(pathKeys[++i])
+                attr = attr[pathKeys[++i]]
             }
             if (attr == null) {
                 val root = mutableMapOf<String, Any?>()
@@ -28,14 +28,14 @@ open class BaseAttributesRepository(
                     lastObject = obj
                 }
                 lastObject[pathKeys.last()] = value
-                storyAttributes.getStorageApi().putMap(lastParentId, root)
+                attributesServiceRepository.getActiveService().getStorageApi().putMap(lastParentId, root)
             } else {
                 val attributeModel = AttributeModel(
                     key = attr.key,
                     parentId = attr.parentId,
                     value = value
                 )
-                storyAttributes.getStorageApi().putAttributes(listOf(attributeModel))
+                attributesServiceRepository.getActiveService().getStorageApi().putAttributes(listOf(attributeModel))
             }
         }
     }
@@ -44,9 +44,5 @@ open class BaseAttributesRepository(
         return licenseRepository.getLicense()?.id?.let { rootParentId ->
             block(rootParentId)
         }
-    }
-
-    protected fun List<ValidatedAttributeModel>.get(key: String): ValidatedAttributeModel? {
-        return firstOrNull { it.key == key }
     }
 }

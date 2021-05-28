@@ -79,6 +79,16 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        contentView.onResume()
+    }
+
+    override fun onPause() {
+        contentView.onPause()
+        super.onPause()
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString(KEY_SESSION_ID, sessionData?.sessionId)
         super.onSaveInstanceState(outState)
