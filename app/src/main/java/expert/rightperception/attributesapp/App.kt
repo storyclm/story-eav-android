@@ -5,6 +5,7 @@ import com.orhanobut.hawk.Hawk
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import expert.rightperception.attributesapp.data.repository.signalr.SignalRRepository
 import expert.rightperception.attributesapp.di.DaggerAppComponent
 import ru.breffi.story.StoryContent
 import ru.breffi.story.di.StoryContentConfiguration
@@ -15,6 +16,9 @@ class App : Application(), HasAndroidInjector {
 
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
+
+    @Inject
+    lateinit var signalRRepository: SignalRRepository
 
     override fun onCreate() {
         super.onCreate()

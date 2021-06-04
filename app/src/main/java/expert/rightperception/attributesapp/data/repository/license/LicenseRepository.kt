@@ -5,6 +5,8 @@ import expert.rightperception.attributesapp.data.api.model.LicenseDto
 import expert.rightperception.attributesapp.data.db.LicenceDao
 import expert.rightperception.attributesapp.data.repository.license.mapper.LicenseMapper
 import expert.rightperception.attributesapp.domain.model.LicenseModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,6 +33,12 @@ class LicenseRepository @Inject constructor(
             } else {
                 getLicenseFromDb()
             }
+        }
+    }
+
+    fun observeLicense(): Flow<LicenseModel?> {
+        return licenceDao.observe().map { dbModel ->
+            dbModel?.let { licenseMapper.map(it) }
         }
     }
 
