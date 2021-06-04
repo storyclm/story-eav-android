@@ -76,10 +76,13 @@ ext {
 dependencies {
 
     implementation 'com.github.storyclm:story-id-android:0.6.6'
-    implementation('ru.breffi.story:storycontent:0.8.3@aar') {
+//    implementation('ru.breffi.story:storycontent:0.8.3@aar') {
+//        transitive = true
+//    }
+    implementation('ru.breffi.story:storycontent:test@aar') {
         transitive = true
     }
-    implementation('expert.rightperception.story:storyattributes:0.5.1@aar') {
+    implementation('expert.rightperception.story:storyattributes:0.5.7@aar') {
         transitive = true
     }
 

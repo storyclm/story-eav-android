@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import expert.rightperception.attributesapp.data.repository.license.LicenseRepository
+import expert.rightperception.attributesapp.data.repository.story_object.AttributesServiceRepository
 import expert.rightperception.attributesapp.domain.interactor.ContentInteractor
 import expert.rightperception.attributesapp.ui.main.model.Data
 import expert.rightperception.attributesapp.ui.main.model.Error
@@ -22,7 +23,8 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val passwordlessAuthHandler: PasswordlessAuthHandler,
     private val contentInteractor: ContentInteractor,
-    private val licenseRepository: LicenseRepository
+    private val licenseRepository: LicenseRepository,
+    private val attributesServiceRepository: AttributesServiceRepository
 ) : ViewModel() {
 
     private val uiState = MutableStateFlow<MainUiState>(Loading)
@@ -58,6 +60,9 @@ class MainViewModel @Inject constructor(
     private suspend fun getData(): MainUiState  {
         val license = licenseRepository.getLicense()
         return if (license != null) {
+            attributesServiceRepository.getActiveService()
+                .getSynchronizationApi()
+                .addEntities(listOf(license.id))
             val content = contentInteractor.getContent()
             if (content != null) {
                 Data(license, content)

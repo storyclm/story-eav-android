@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.redmadrobot.inputmask.MaskedTextChangedListener
 import expert.rightperception.attributesapp.R
 import expert.rightperception.attributesapp.domain.model.objects.FormItem
-import expert.rightperception.attributesapp.domain.model.objects.ObjectsContainer
+import expert.rightperception.attributesapp.domain.model.objects.PresentationContext
 import expert.rightperception.attributesapp.ui.common.InjectableFragment
 import expert.rightperception.attributesapp.ui.common.Utils
 import expert.rightperception.attributesapp.ui.configurator.adapter.FormAdapter
@@ -32,21 +32,15 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
 
     companion object {
 
-        private const val LICENSE_ID = "LICENSE_ID"
-
-        fun newInstance(licenseId: String): ConfiguratorFragment {
-            return ConfiguratorFragment().apply {
-                arguments = Bundle().apply {
-                    putString(LICENSE_ID, licenseId)
-                }
-            }
+        fun newInstance(): ConfiguratorFragment {
+            return ConfiguratorFragment()
         }
     }
 
     @Inject
     lateinit var viewModel: ConfiguratorViewModel
 
-    private var objects: ObjectsContainer? = null
+    private var objects: PresentationContext? = null
     private var formAdapter: FormAdapter? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -76,140 +70,136 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
             showAddFormItemDialog()
         }
 
-        arguments?.getString(LICENSE_ID)?.let { licenseId ->
-
-            viewModel.setup(licenseId)
-
-            notes_visibility_aw.listener = object : AttributeWidget.Listener {
-                override fun onValueSet(value: Boolean) {
-                    objects?.let { objectsContainer ->
-                        renderObjects(objectsContainer.copy(notes = objectsContainer.notes.copy(notesVisible = value)))
-                    }
+        notes_visibility_aw.listener = object : AttributeWidget.Listener {
+            override fun onValueSet(value: Boolean) {
+                objects?.let { objectsContainer ->
+                    renderObjects(objectsContainer.copy(notes = objectsContainer.notes.copy(notesVisible = value)))
                 }
-            }
-            notes_text_naw.listener = object : NestedAttributeWidget.Listener {
-                override fun onValueSet(value: String) {
-                    objects?.let { objectsContainer ->
-                        renderObjects(
-                            objectsContainer.copy(
-                                notes = objectsContainer.notes.copy(
-                                    parameters = objectsContainer.notes.parameters.copy(text = value)
-                                )
-                            )
-                        )
-                    }
-                }
-            }
-            notes_color_naw.listener = object : NestedAttributeWidget.Listener {
-                override fun onValueSet(value: String) {
-                    objects?.let { objectsContainer ->
-                        renderObjects(
-                            objectsContainer.copy(
-                                notes = objectsContainer.notes.copy(
-                                    parameters = objectsContainer.notes.parameters.copy(color = value)
-                                )
-                            )
-                        )
-                    }
-                }
-            }
-            notes_fontsize_naw.listener = object : NestedAttributeWidget.Listener {
-                override fun onValueSet(value: String) {
-                    objects?.let { objectsContainer ->
-                        renderObjects(
-                            objectsContainer.copy(
-                                notes = objectsContainer.notes.copy(
-                                    parameters = objectsContainer.notes.parameters.copy(fontSize = value.toInt())
-                                )
-                            )
-                        )
-                    }
-                }
-            }
-
-            accentcolor_visibility_aw.listener = object : AttributeWidget.Listener {
-                override fun onValueSet(value: Boolean) {
-                    objects?.let { objectsContainer ->
-                        renderObjects(objectsContainer.copy(accentColor = objectsContainer.accentColor.copy(accentColorVisible = value)))
-                    }
-                }
-            }
-            accentcolor_color_naw.listener = object : NestedAttributeWidget.Listener {
-                override fun onValueSet(value: String) {
-                    objects?.let { objectsContainer ->
-                        renderObjects(
-                            objectsContainer.copy(
-                                accentColor = objectsContainer.accentColor.copy(
-                                    parameters = objectsContainer.accentColor.parameters.copy(color = value)
-                                )
-                            )
-                        )
-                    }
-                }
-            }
-            accentcolor_transparent_naw.listener = object : NestedAttributeWidget.Listener {
-                override fun onValueSet(value: String) {
-                    objects?.let { objectsContainer ->
-                        renderObjects(
-                            objectsContainer.copy(
-                                accentColor = objectsContainer.accentColor.copy(
-                                    parameters = objectsContainer.accentColor.parameters.copy(transparent = value)
-                                )
-                            )
-                        )
-                    }
-                }
-            }
-
-            rating_visibility_aw.listener = object : AttributeWidget.Listener {
-                override fun onValueSet(value: Boolean) {
-                    objects?.let { objectsContainer ->
-                        renderObjects(objectsContainer.copy(rating = objectsContainer.rating.copy(ratingVisible = value)))
-                    }
-                }
-            }
-            rating_color_naw.listener = object : NestedAttributeWidget.Listener {
-                override fun onValueSet(value: String) {
-                    objects?.let { objectsContainer ->
-                        renderObjects(
-                            objectsContainer.copy(
-                                rating = objectsContainer.rating.copy(
-                                    parameters = objectsContainer.rating.parameters.copy(color = value)
-                                )
-                            )
-                        )
-                    }
-                }
-            }
-            rating_quantity_naw.listener = object : NestedAttributeWidget.Listener {
-                override fun onValueSet(value: String) {
-                    objects?.let { objectsContainer ->
-                        renderObjects(
-                            objectsContainer.copy(
-                                rating = objectsContainer.rating.copy(
-                                    parameters = objectsContainer.rating.parameters.copy(quantity = value.toInt())
-                                )
-                            )
-                        )
-                    }
-                }
-            }
-            form_visibility_aw.listener = object : AttributeWidget.Listener {
-                override fun onValueSet(value: Boolean) {
-                    objects?.let { objectsContainer ->
-                        renderObjects(objectsContainer.copy(form = objectsContainer.form.copy(formVisible = value)))
-                    }
-                }
-            }
-
-            viewModel.uiModel.observe(viewLifecycleOwner) { objectsContainer ->
-                renderObjects(objectsContainer)
-            }
-
-            configurator_save_btn.setOnClickListener {
-                objects?.let { viewModel.saveObjects(configurator_endpoint_et.text.toString(), it) }
             }
         }
+        notes_text_naw.listener = object : NestedAttributeWidget.Listener {
+            override fun onValueSet(value: String) {
+                objects?.let { objectsContainer ->
+                    renderObjects(
+                        objectsContainer.copy(
+                            notes = objectsContainer.notes.copy(
+                                parameters = objectsContainer.notes.parameters.copy(text = value)
+                            )
+                        )
+                    )
+                }
+            }
+        }
+        notes_color_naw.listener = object : NestedAttributeWidget.Listener {
+            override fun onValueSet(value: String) {
+                objects?.let { objectsContainer ->
+                    renderObjects(
+                        objectsContainer.copy(
+                            notes = objectsContainer.notes.copy(
+                                parameters = objectsContainer.notes.parameters.copy(color = value)
+                            )
+                        )
+                    )
+                }
+            }
+        }
+        notes_fontsize_naw.listener = object : NestedAttributeWidget.Listener {
+            override fun onValueSet(value: String) {
+                objects?.let { objectsContainer ->
+                    renderObjects(
+                        objectsContainer.copy(
+                            notes = objectsContainer.notes.copy(
+                                parameters = objectsContainer.notes.parameters.copy(fontSize = value.toInt())
+                            )
+                        )
+                    )
+                }
+            }
+        }
+
+        accentcolor_visibility_aw.listener = object : AttributeWidget.Listener {
+            override fun onValueSet(value: Boolean) {
+                objects?.let { objectsContainer ->
+                    renderObjects(objectsContainer.copy(accentColor = objectsContainer.accentColor.copy(accentColorVisible = value)))
+                }
+            }
+        }
+        accentcolor_color_naw.listener = object : NestedAttributeWidget.Listener {
+            override fun onValueSet(value: String) {
+                objects?.let { objectsContainer ->
+                    renderObjects(
+                        objectsContainer.copy(
+                            accentColor = objectsContainer.accentColor.copy(
+                                parameters = objectsContainer.accentColor.parameters.copy(color = value)
+                            )
+                        )
+                    )
+                }
+            }
+        }
+        accentcolor_transparent_naw.listener = object : NestedAttributeWidget.Listener {
+            override fun onValueSet(value: String) {
+                objects?.let { objectsContainer ->
+                    renderObjects(
+                        objectsContainer.copy(
+                            accentColor = objectsContainer.accentColor.copy(
+                                parameters = objectsContainer.accentColor.parameters.copy(transparent = value)
+                            )
+                        )
+                    )
+                }
+            }
+        }
+
+        rating_visibility_aw.listener = object : AttributeWidget.Listener {
+            override fun onValueSet(value: Boolean) {
+                objects?.let { objectsContainer ->
+                    renderObjects(objectsContainer.copy(rating = objectsContainer.rating.copy(ratingVisible = value)))
+                }
+            }
+        }
+        rating_color_naw.listener = object : NestedAttributeWidget.Listener {
+            override fun onValueSet(value: String) {
+                objects?.let { objectsContainer ->
+                    renderObjects(
+                        objectsContainer.copy(
+                            rating = objectsContainer.rating.copy(
+                                parameters = objectsContainer.rating.parameters.copy(color = value)
+                            )
+                        )
+                    )
+                }
+            }
+        }
+        rating_quantity_naw.listener = object : NestedAttributeWidget.Listener {
+            override fun onValueSet(value: String) {
+                objects?.let { objectsContainer ->
+                    renderObjects(
+                        objectsContainer.copy(
+                            rating = objectsContainer.rating.copy(
+                                parameters = objectsContainer.rating.parameters.copy(quantity = value.toInt())
+                            )
+                        )
+                    )
+                }
+            }
+        }
+        form_visibility_aw.listener = object : AttributeWidget.Listener {
+            override fun onValueSet(value: Boolean) {
+                objects?.let { objectsContainer ->
+                    renderObjects(objectsContainer.copy(form = objectsContainer.form.copy(formVisible = value)))
+                }
+            }
+        }
+
+        viewModel.uiModel.observe(viewLifecycleOwner) { objectsContainer ->
+            renderObjects(objectsContainer)
+        }
+
+        configurator_save_btn.setOnClickListener {
+            objects?.let { viewModel.saveObjects(configurator_endpoint_et.text.toString(), it) }
+        }
+
     }
 
     override fun onDestroyView() {
@@ -217,25 +207,25 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
         formAdapter = null
     }
 
-    fun renderObjects(objectsContainer: ObjectsContainer) {
-        objects = objectsContainer
-        notes_visibility_aw.setValue(objectsContainer.notes.notesVisible)
-        notes_color_naw.setValue(objectsContainer.notes.parameters.color)
-        notes_text_naw.setValue(objectsContainer.notes.parameters.text)
-        notes_fontsize_naw.setValue(objectsContainer.notes.parameters.fontSize.toString())
+    fun renderObjects(presentationContext: PresentationContext) {
+        objects = presentationContext
+        notes_visibility_aw.setValue(presentationContext.notes.notesVisible)
+        notes_color_naw.setValue(presentationContext.notes.parameters.color)
+        notes_text_naw.setValue(presentationContext.notes.parameters.text)
+        notes_fontsize_naw.setValue(presentationContext.notes.parameters.fontSize.toString())
 
-        accentcolor_visibility_aw.setValue(objectsContainer.accentColor.accentColorVisible)
-        accentcolor_color_naw.setValue(objectsContainer.accentColor.parameters.color)
-        accentcolor_transparent_naw.setValue(objectsContainer.accentColor.parameters.transparent)
+        accentcolor_visibility_aw.setValue(presentationContext.accentColor.accentColorVisible)
+        accentcolor_color_naw.setValue(presentationContext.accentColor.parameters.color)
+        accentcolor_transparent_naw.setValue(presentationContext.accentColor.parameters.transparent)
 
-        rating_visibility_aw.setValue(objectsContainer.rating.ratingVisible)
-        rating_color_naw.setValue(objectsContainer.rating.parameters.color)
-        rating_quantity_naw.setValue(objectsContainer.rating.parameters.quantity.toString())
-        rating_progress_naw.setValue(objectsContainer.rating.parameters.progress.toString())
+        rating_visibility_aw.setValue(presentationContext.rating.ratingVisible)
+        rating_color_naw.setValue(presentationContext.rating.parameters.color)
+        rating_quantity_naw.setValue(presentationContext.rating.parameters.quantity.toString())
+        rating_progress_naw.setValue(presentationContext.rating.parameters.progress.toString())
 
-        form_visibility_aw.setValue(objectsContainer.form.formVisible)
+        form_visibility_aw.setValue(presentationContext.form.formVisible)
 
-        val items = objectsContainer.form.items.entries
+        val items = presentationContext.form.items.entries
             .sortedBy { it.value.order }
             .map { (key, formItem) ->
                 FormItemUiModel(

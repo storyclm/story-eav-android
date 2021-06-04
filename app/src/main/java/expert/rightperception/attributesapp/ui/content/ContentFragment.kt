@@ -4,13 +4,13 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.webkit.*
+import android.webkit.WebView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.lifecycleScope
-import com.google.gson.JsonParser
 import expert.rightperception.attributesapp.R
 import expert.rightperception.attributesapp.ui.common.InjectableFragment
+import expert.rightperception.attributesapp.ui.content.model.ContentDataModel
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_content.*
 import kotlinx.coroutines.Job
@@ -18,11 +18,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.breffi.story.domain.bridge.*
 import ru.breffi.story.domain.bridge.StoryBridgeView.RestoreHandler
-import ru.breffi.story.domain.bridge.model.BridgeSettings
-import ru.breffi.story.domain.bridge.model.CloseMode
-import ru.breffi.story.domain.bridge.model.SessionData
+import ru.breffi.story.domain.bridge.model.*
 import ru.breffi.story.util.setSystemUiVisible
-import java.io.File
 import javax.inject.Inject
 
 
@@ -32,14 +29,12 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
         const val TAG = "ContentFragment"
         const val KEY_SESSION_ID = "session_id"
 
-        private const val LICENSE_ID = "LICENSE_ID"
         private const val PRESENTATION_ID = "PRESENTATION_ID"
         private const val INJECTION_SCRIPT = "INJECTION_SCRIPT"
 
-        fun newInstance(licenseId: String, presentationId: Int, script: String): ContentFragment {
+        fun newInstance(presentationId: Int, script: String): ContentFragment {
             return ContentFragment().apply {
                 arguments = Bundle().apply {
-                    putString(LICENSE_ID, licenseId)
                     putInt(PRESENTATION_ID, presentationId)
                     putString(INJECTION_SCRIPT, script)
                 }
@@ -62,8 +57,7 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
 
     private var sessionData: SessionData? = null
 
-    private var script: String = ""
-    private var storyObject: String = ""
+    private var injectionScript: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_content, container, false)
@@ -72,16 +66,27 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        WebView.setWebContentsDebuggingEnabled(true)
         arguments?.let { args ->
-            script = args.getString(INJECTION_SCRIPT, "")
+            injectionScript = args.getString(INJECTION_SCRIPT)
             val id = args.getInt(PRESENTATION_ID, -1)
             if (id != -1) {
-                viewModel.getData().observe(viewLifecycleOwner) { objectString ->
-                    storyObject = objectString
-                    createBridge(id, sessionData?.sessionId ?: savedInstanceState?.getString(KEY_SESSION_ID))
+                viewModel.getInitialData().observe(viewLifecycleOwner) { contentData ->
+                    val sessionId = sessionData?.sessionId ?: savedInstanceState?.getString(KEY_SESSION_ID)
+                    createBridge(id, sessionId, contentData)
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        contentView.onResume()
+    }
+
+    override fun onPause() {
+        contentView.onPause()
+        super.onPause()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -102,9 +107,37 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
         super.onDestroyView()
     }
 
-    private fun createBridge(presentationId: Int, sessionId: String?) {
-        val bridgeSettings = BridgeSettings(sessionId = sessionId, userId = "demo", resumeSession = sessionId != null, restoreSessions = false)
-        val bridgeContext = StoryBridgeContext(this, presentationId, bridgeSettings)
+    private fun createBridge(presentationId: Int, sessionId: String?, contentDataModel: ContentDataModel) {
+        val contextObjectConfigs = mutableListOf<ContextObjectConfiguration>()
+        contentDataModel.presentationContext?.let { presentationContext ->
+            val presentationContextObjectConfiguration = ContextObjectConfiguration(
+                name = "presentation",
+                initialObject = presentationContext,
+                mutabilityPolicy = AppContentMutablePolicy(viewModel.presentationContextRepository, viewModel.presentationContextRepository)
+            )
+            contextObjectConfigs.add(presentationContextObjectConfiguration)
+        }
+        contentDataModel.testObject?.let { testObject ->
+            val testContextObjectConfiguration = ContextObjectConfiguration(
+                name = "debugAppState",
+                initialObject = testObject,
+                mutabilityPolicy = AppContentMutablePolicy(viewModel.testObjectRepository, viewModel.testObjectRepository)
+            )
+            contextObjectConfigs.add(testContextObjectConfiguration)
+        }
+        val bridgeSettings = BridgeSettings(
+            sessionId = sessionId,
+            userId = "demo",
+            resumeSession = sessionId != null,
+            restoreSessions = false
+        )
+        val bridgeContext = StoryBridgeContext(
+            this,
+            presentationId,
+            bridgeSettings,
+            contextObjectConfigs,
+            injectionScript
+        )
         val modules = listOf<BridgeModule>(
 //            UiModule(requireActivity(), close_button)
         )
@@ -143,73 +176,6 @@ class ContentFragment : InjectableFragment(), ContentView, StoryBridgeView {
     override fun onInitialized(sessionData: SessionData) {
         this.sessionData = sessionData
         initPresentationControls()
-
-        WebView.setWebContentsDebuggingEnabled(true)
-        class JsObject {
-
-//            @JavascriptInterface
-//            fun changeStory(story: String) {
-//                storyObject = story
-//                viewModel.updateStoryObject(story)
-//            }
-
-            @JavascriptInterface
-            fun setStoryProp(objectName: String, keyPath: String, type: String, value: String?) {
-                Log.e("DBG_", "set $objectName $keyPath $value ${value?.javaClass?.name}")
-                val json = JsonParser.parseString(storyObject).asJsonObject
-                val keys = listOf(objectName).plus(keyPath.split("."))
-                val pathKeys = keys.subList(0, keys.size - 1)
-                val setKey = keys.last()
-                pathKeys.fold(json) { acc, key -> acc?.getAsJsonObject(key) }
-                    ?.run {
-                        when (type) {
-                            "boolean" -> addProperty(setKey, value.toBoolean())
-                            "integer" -> addProperty(setKey, value?.toInt())
-                            "float" -> addProperty(setKey, value?.toDouble())
-                            else -> addProperty(setKey, value)
-                        }
-                    }
-                val updatedStory = json.toString()
-                storyObject = updatedStory
-                viewModel.updateStoryObject(updatedStory)
-            }
-
-            @JavascriptInterface
-            fun deleteStoryProp(objectName: String, keyPath: String) {
-                Log.e("DBG_", "delete $objectName $keyPath")
-                val json = JsonParser.parseString(storyObject).asJsonObject
-                val keys = listOf(objectName).plus(keyPath.split("."))
-                val pathKeys = keys.subList(0, keys.size - 1)
-                val deleteKey = keys.last()
-                pathKeys.fold(json) { acc, key -> acc?.getAsJsonObject(key) }
-                    ?.remove(deleteKey)
-                val updatedStory = json.toString()
-                storyObject = updatedStory
-                viewModel.updateStoryObject(updatedStory)
-            }
-        }
-
-        contentView.addJavascriptInterface(JsObject(), "nativeStory")
-        contentView.webViewClient = object : WebViewClient() {
-
-            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-                return if (request.url.toString().contains(".html")) {
-                    val obj = if (storyObject.isEmpty()) "" else "var _story = ${storyObject};\n"
-                    val text = "<script id=\"context_injection_script\" type=\"text/javascript\">$obj$script\ndocument.getElementById('context_injection_script').remove();</script>" + File(request.url.toString().replace("file://", "")).readText()
-                    WebResourceResponse("text/html", "UTF-8", text.byteInputStream())
-                } else {
-                    null
-                }
-            }
-        }
-        viewModel.storyObjectLiveData.observe(viewLifecycleOwner) { objectString ->
-//            if (objectString != storyObject) {
-                storyObject = objectString
-                contentView.evaluateJavascript("var _story = ${objectString}") {
-                    contentView.loadUrl("javascript:_onStoryChange()")
-                }
-//            }
-        }
     }
 
     override fun onFailed(reason: String) {

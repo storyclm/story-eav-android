@@ -3,26 +3,29 @@ package expert.rightperception.attributesapp.ui.configurator_test
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import expert.rightperception.attributesapp.data.repository.story_object.StoryObjectRepository
+import com.google.gson.JsonParser
+import com.google.gson.JsonSyntaxException
+import expert.rightperception.attributesapp.data.repository.story_object.TestObjectRepository
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 class ConfiguratorTestViewModel @Inject constructor(
-    private val storyObjectRepository: StoryObjectRepository
+    private val testObjectRepository: TestObjectRepository
 ) : ViewModel() {
 
-    private val mutex = Mutex()
-
-    val objectString = storyObjectRepository
-        .observeObject()
+    val testObject = testObjectRepository
+        .observeTestObject()
+        .distinctUntilChanged()
         .asLiveData()
 
-    fun saveObject(objectString: String) {
+    fun saveTestObject(objectString: String) {
         viewModelScope.launch {
-            mutex.withLock {
-                storyObjectRepository.saveObject(objectString)
+            try {
+                val jsonObject = JsonParser.parseString(objectString).asJsonObject
+                testObjectRepository.saveTestObject(jsonObject)
+            } catch (e: JsonSyntaxException) {
+                e.printStackTrace()
             }
         }
     }

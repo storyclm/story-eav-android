@@ -3,46 +3,35 @@ package expert.rightperception.attributesapp.ui.configurator
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import expert.rightperception.attributesapp.data.repository.story_object.StoryObjectRepository
-import expert.rightperception.attributesapp.domain.model.objects.ObjectsContainer
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
+import expert.rightperception.attributesapp.data.repository.story_object.PresentationContextRepository
+import expert.rightperception.attributesapp.domain.model.objects.PresentationContext
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ConfiguratorViewModel @Inject constructor(
-    private val storyObjectRepository: StoryObjectRepository
+    private val presentationContextRepository: PresentationContextRepository
 ) : ViewModel() {
 
-    private lateinit var licenseId: String
-    private val licenseIdFlow = MutableSharedFlow<String>(1)
-
-    val uiModel = licenseIdFlow
-        .filterNotNull()
-        .flatMapLatest { licenseId -> storyObjectRepository.observeObjects(licenseId) }
+    val uiModel = presentationContextRepository.observePresentationContext()
+        .distinctUntilChanged()
         .asLiveData()
 
-    fun setup(licenseId: String) {
-        this.licenseId = licenseId
-        licenseIdFlow.tryEmit(licenseId)
-    }
-
     fun getAttributesEndpoint(): String {
-        return storyObjectRepository.getAttributesEndpoint()
+        return presentationContextRepository.getAttributesEndpoint()
     }
 
-    fun saveObjects(endpoint: String, objectsContainer: ObjectsContainer) {
+    fun saveObjects(endpoint: String, presentationContext: PresentationContext) {
         viewModelScope.launch {
-            storyObjectRepository.setAttributesEndpoint(endpoint)
-            storyObjectRepository.setObject(licenseId, objectsContainer)
+            presentationContextRepository.setAttributesEndpoint(endpoint)
+            presentationContextRepository.setPresentationContext(presentationContext)
         }
     }
 
     fun deleteFormItem(endpoint: String, key: String) {
         viewModelScope.launch {
-            storyObjectRepository.setAttributesEndpoint(endpoint)
-            storyObjectRepository.deleteFormItem(licenseId, key)
+            presentationContextRepository.setAttributesEndpoint(endpoint)
+            presentationContextRepository.deleteFormItem(key)
         }
     }
 }
