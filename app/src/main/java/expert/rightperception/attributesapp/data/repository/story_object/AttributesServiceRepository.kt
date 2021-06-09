@@ -13,7 +13,7 @@ class AttributesServiceRepository @Inject constructor(
 ) {
 
     companion object {
-        const val SYNCHRONIZATION_INTERVAL_MS = 1 * 60 * 1000L
+        const val SYNCHRONIZATION_INTERVAL_MS = 5 * 60 * 1000L
         const val AUTO_SYNCHRONIZATION_ENABLED = true
     }
 

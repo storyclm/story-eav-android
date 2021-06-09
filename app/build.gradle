@@ -82,7 +82,7 @@ dependencies {
     implementation('ru.breffi.story:storycontent:test@aar') {
         transitive = true
     }
-    implementation('expert.rightperception.story:storyattributes:0.5.7@aar') {
+    implementation('expert.rightperception.story:storyattributes:0.5.10@aar') {
         transitive = true
     }
 
