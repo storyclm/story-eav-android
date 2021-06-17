@@ -61,8 +61,8 @@ class PresentationContextRepository @Inject constructor(
     }
 
     suspend fun setPresentationContext(presentationContext: PresentationContext) {
-        withLicenseId { licenseId ->
-            mutex.withLock {
+        mutex.withLock {
+            withLicenseId { licenseId ->
                 attributesServiceRepository.getActiveService().getStorageApi().putObject(licenseId, presentationContext)
                 presentationContextStateFlow.emit(presentationContext)
             }
@@ -139,8 +139,8 @@ class PresentationContextRepository @Inject constructor(
 
     private fun modifyAttribute(pathKeys: List<String>, block: suspend (attributeModel: ValidatedAttributeModel) -> Unit) {
         scope.launch {
-            withLicenseId { licenseId ->
-                mutex.withLock {
+            mutex.withLock {
+                withLicenseId { licenseId ->
                     val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(licenseId)
                     pathKeys.subList(1, pathKeys.size).fold(attrs[pathKeys[0]]) { acc, key ->
                         acc?.get(key)

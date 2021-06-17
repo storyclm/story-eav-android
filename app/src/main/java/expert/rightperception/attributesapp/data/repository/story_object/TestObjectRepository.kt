@@ -50,8 +50,8 @@ class TestObjectRepository @Inject constructor(
     }
 
     suspend fun saveTestObject(jsonObject: JsonObject) {
-        withLicenseId { rootParentId ->
-            mutex.withLock {
+        mutex.withLock {
+            withLicenseId { rootParentId ->
                 val wrappedJsonObject = JsonObject().apply {
                     add(WRAPPER_KEY, jsonObject)
                 }
@@ -83,8 +83,8 @@ class TestObjectRepository @Inject constructor(
 
     override fun deleteProperty(pathKeys: List<String>) {
         scope.launch {
-            withLicenseId { rootParentId ->
-                mutex.withLock {
+            mutex.withLock {
+                withLicenseId { rootParentId ->
                     val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(rootParentId)
                     pathKeys.fold(attrs[WRAPPER_KEY]) { acc, key ->
                         acc?.get(key)
@@ -123,8 +123,8 @@ class TestObjectRepository @Inject constructor(
 
     private fun setValue(pathKeys: List<String>, value: Any?) {
         scope.launch {
-            withLicenseId { rootParentId ->
-                mutex.withLock {
+            mutex.withLock {
+                withLicenseId { rootParentId ->
                     val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(rootParentId)
                     set(rootParentId, attrs, listOf(WRAPPER_KEY).plus(pathKeys), value)
                     sendUpdate(rootParentId)
