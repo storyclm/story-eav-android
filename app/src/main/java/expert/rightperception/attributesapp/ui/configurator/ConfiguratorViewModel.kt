@@ -2,11 +2,9 @@ package expert.rightperception.attributesapp.ui.configurator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
 import expert.rightperception.attributesapp.data.repository.story_object.PresentationContextRepository
 import expert.rightperception.attributesapp.domain.model.objects.PresentationContext
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ConfiguratorViewModel @Inject constructor(
@@ -22,16 +20,12 @@ class ConfiguratorViewModel @Inject constructor(
     }
 
     fun saveObjects(endpoint: String, presentationContext: PresentationContext) {
-        viewModelScope.launch {
-            presentationContextRepository.setAttributesEndpoint(endpoint)
-            presentationContextRepository.setPresentationContext(presentationContext)
-        }
+        presentationContextRepository.setAttributesEndpoint(endpoint)
+        presentationContextRepository.setPresentationContext(presentationContext)
     }
 
     fun deleteFormItem(endpoint: String, key: String) {
-        viewModelScope.launch {
-            presentationContextRepository.setAttributesEndpoint(endpoint)
-            presentationContextRepository.deleteFormItem(key)
-        }
+        presentationContextRepository.setAttributesEndpoint(endpoint)
+        presentationContextRepository.deleteFormItem(key)
     }
 }

@@ -2,6 +2,8 @@ package expert.rightperception.attributesapp.data.repository.story_object
 
 import com.google.gson.JsonNull
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import com.google.gson.JsonSyntaxException
 import expert.rightperception.attributesapp.data.repository.license.LicenseRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +16,7 @@ import ru.breffi.story.domain.bridge.model.AppUpdatesProvider
 import ru.breffi.story.domain.bridge.model.ContentUpdatesReceiver
 import ru.rightperception.storyattributes.utility.asJson
 import ru.rightperception.storyattributes.utility.get
+import java.util.concurrent.Executors
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,8 +36,9 @@ class TestObjectRepository @Inject constructor(
 
     private val testObjectStateFlow = MutableSharedFlow<JsonObject>(1)
 
-    private val mutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val singleThreadScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher() + SupervisorJob())
+    private val mutex = Mutex()
 
     private var syncJob: Job? = null
 
@@ -49,14 +53,19 @@ class TestObjectRepository @Inject constructor(
         }
     }
 
-    suspend fun saveTestObject(jsonObject: JsonObject) {
-        mutex.withLock {
+    fun saveTestObjectString(objectString: String) {
+        launchInSequence {
             withLicenseId { rootParentId ->
-                val wrappedJsonObject = JsonObject().apply {
-                    add(WRAPPER_KEY, jsonObject)
+                try {
+                    val jsonObject = JsonParser.parseString(objectString).asJsonObject
+                    val wrappedJsonObject = JsonObject().apply {
+                        add(WRAPPER_KEY, jsonObject)
+                    }
+                    attributesServiceRepository.getActiveService().getStorageApi().putJson(rootParentId, wrappedJsonObject)
+                    sendUpdate(rootParentId)
+                } catch (e: JsonSyntaxException) {
+                    e.printStackTrace()
                 }
-                attributesServiceRepository.getActiveService().getStorageApi().putJson(rootParentId, wrappedJsonObject)
-                sendUpdate(rootParentId)
             }
         }
     }
@@ -82,17 +91,15 @@ class TestObjectRepository @Inject constructor(
     }
 
     override fun deleteProperty(pathKeys: List<String>) {
-        scope.launch {
-            mutex.withLock {
-                withLicenseId { rootParentId ->
-                    val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(rootParentId)
-                    pathKeys.fold(attrs[WRAPPER_KEY]) { acc, key ->
-                        acc?.get(key)
-                    }?.let { attr ->
-                        attributesServiceRepository.getActiveService().getStorageApi().deleteById(attr.id)
-                    }
-                    sendUpdate(rootParentId)
+        launchInSequence {
+            withLicenseId { rootParentId ->
+                val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(rootParentId)
+                pathKeys.fold(attrs[WRAPPER_KEY]) { acc, key ->
+                    acc?.get(key)
+                }?.let { attr ->
+                    attributesServiceRepository.getActiveService().getStorageApi().deleteById(attr.id)
                 }
+                sendUpdate(rootParentId)
             }
         }
     }
@@ -122,13 +129,11 @@ class TestObjectRepository @Inject constructor(
     }
 
     private fun setValue(pathKeys: List<String>, value: Any?) {
-        scope.launch {
-            mutex.withLock {
-                withLicenseId { rootParentId ->
-                    val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(rootParentId)
-                    set(rootParentId, attrs, listOf(WRAPPER_KEY).plus(pathKeys), value)
-                    sendUpdate(rootParentId)
-                }
+        launchInSequence {
+            withLicenseId { rootParentId ->
+                val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(rootParentId)
+                set(rootParentId, attrs, listOf(WRAPPER_KEY).plus(pathKeys), value)
+                sendUpdate(rootParentId)
             }
         }
     }
@@ -150,6 +155,14 @@ class TestObjectRepository @Inject constructor(
                             testObjectStateFlow.emit(objAttr.attributes.asJson(objAttr.id))
                         }
                     }
+            }
+        }
+    }
+
+    private fun launchInSequence(block: suspend CoroutineScope.() -> Unit) {
+        singleThreadScope.launch {
+            mutex.withLock {
+                block()
             }
         }
     }

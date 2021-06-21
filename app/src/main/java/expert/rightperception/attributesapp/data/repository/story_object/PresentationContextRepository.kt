@@ -15,6 +15,7 @@ import ru.rightperception.storyattributes.domain.model.AttributeModel
 import ru.rightperception.storyattributes.domain.model.ValidatedAttributeModel
 import ru.rightperception.storyattributes.utility.asObject
 import ru.rightperception.storyattributes.utility.get
+import java.util.concurrent.Executors
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -34,8 +35,9 @@ class PresentationContextRepository @Inject constructor(
     }
 
     private val presentationContextStateFlow = MutableSharedFlow<PresentationContext>(1)
-    private val mutex = Mutex()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val singleThreadScope = CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher() + SupervisorJob())
+    private val mutex = Mutex()
 
     private var syncJob: Job? = null
 
@@ -60,8 +62,8 @@ class PresentationContextRepository @Inject constructor(
         return preferencesStorage.getAttributesEndpoint()
     }
 
-    suspend fun setPresentationContext(presentationContext: PresentationContext) {
-        mutex.withLock {
+    fun setPresentationContext(presentationContext: PresentationContext) {
+        launchInSequence {
             withLicenseId { licenseId ->
                 attributesServiceRepository.getActiveService().getStorageApi().putObject(licenseId, presentationContext)
                 presentationContextStateFlow.emit(presentationContext)
@@ -69,7 +71,7 @@ class PresentationContextRepository @Inject constructor(
         }
     }
 
-    suspend fun deleteFormItem(key: String) {
+    fun deleteFormItem(key: String) {
         modifyAttribute(listOf("form", "items", key)) {
             attributesServiceRepository.getActiveService().getStorageApi().deleteById(it.id)
         }
@@ -138,17 +140,15 @@ class PresentationContextRepository @Inject constructor(
     }
 
     private fun modifyAttribute(pathKeys: List<String>, block: suspend (attributeModel: ValidatedAttributeModel) -> Unit) {
-        scope.launch {
-            mutex.withLock {
-                withLicenseId { licenseId ->
-                    val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(licenseId)
-                    pathKeys.subList(1, pathKeys.size).fold(attrs[pathKeys[0]]) { acc, key ->
-                        acc?.get(key)
-                    }?.let { attr ->
-                        block(attr)
-                    }
-                    presentationContextStateFlow.emit(attributesServiceRepository.getActiveService().getStorageApi().getObjectByParentId(licenseId, PresentationContext::class.java))
+        launchInSequence {
+            withLicenseId { licenseId ->
+                val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(licenseId)
+                pathKeys.subList(1, pathKeys.size).fold(attrs[pathKeys[0]]) { acc, key ->
+                    acc?.get(key)
+                }?.let { attr ->
+                    block(attr)
                 }
+                presentationContextStateFlow.emit(attributesServiceRepository.getActiveService().getStorageApi().getObjectByParentId(licenseId, PresentationContext::class.java))
             }
         }
     }
@@ -163,6 +163,14 @@ class PresentationContextRepository @Inject constructor(
                             presentationContextStateFlow.emit(attrs.asObject(licenseId, PresentationContext::class.java))
                         }
                     }
+            }
+        }
+    }
+
+    private fun launchInSequence(block: suspend CoroutineScope.() -> Unit) {
+        singleThreadScope.launch {
+            mutex.withLock {
+                block()
             }
         }
     }
