@@ -6,15 +6,11 @@ import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 import expert.rightperception.attributesapp.data.repository.license.LicenseRepository
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.breffi.story.domain.bridge.model.AppUpdatesProvider
 import ru.breffi.story.domain.bridge.model.ContentUpdatesReceiver
-import ru.rightperception.storyattributes.utility.asJson
 import ru.rightperception.storyattributes.utility.get
 import java.util.concurrent.Executors
 import javax.inject.Inject
@@ -47,7 +43,9 @@ class TestObjectRepository @Inject constructor(
     init {
         createSyncJob()
         scope.launch {
-            testObjectStateFlow.collect {
+            testObjectStateFlow
+                .distinctUntilChanged()
+                .collect {
                 listener?.onUpdate(contextObject = it)
             }
         }
@@ -151,9 +149,7 @@ class TestObjectRepository @Inject constructor(
             withLicenseId { licenseId ->
                 attributesServiceRepository.getActiveService().getSynchronizationApi().observeSynchronizationSuccess(licenseId)
                     .collect { attrs ->
-                        attrs.find { it.key == WRAPPER_KEY }?.let { objAttr ->
-                            testObjectStateFlow.emit(objAttr.attributes.asJson(objAttr.id))
-                        }
+                        sendUpdate(licenseId)
                     }
             }
         }

@@ -3,10 +3,7 @@ package expert.rightperception.attributesapp.data.repository.story_object
 import expert.rightperception.attributesapp.data.repository.license.LicenseRepository
 import expert.rightperception.attributesapp.domain.model.objects.PresentationContext
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.breffi.story.domain.bridge.model.AppUpdatesProvider
@@ -46,9 +43,11 @@ class PresentationContextRepository @Inject constructor(
     init {
         createSyncJob()
         scope.launch {
-            presentationContextStateFlow.collect {
-                listener?.onUpdate(contextObject = it)
-            }
+            presentationContextStateFlow
+                .distinctUntilChanged()
+                .collect {
+                    listener?.onUpdate(contextObject = it)
+                }
         }
     }
 
@@ -148,7 +147,8 @@ class PresentationContextRepository @Inject constructor(
                 }?.let { attr ->
                     block(attr)
                 }
-                presentationContextStateFlow.emit(attributesServiceRepository.getActiveService().getStorageApi().getObjectByParentId(licenseId, PresentationContext::class.java))
+                val presentation = attributesServiceRepository.getActiveService().getStorageApi().getObjectByParentId(licenseId, PresentationContext::class.java)
+                presentationContextStateFlow.emit(presentation)
             }
         }
     }
@@ -160,7 +160,8 @@ class PresentationContextRepository @Inject constructor(
                 attributesServiceRepository.getActiveService().getSynchronizationApi().observeSynchronizationSuccess(licenseId)
                     .collect { attrs ->
                         if (attrs.any { it.key == "notes" }) {
-                            presentationContextStateFlow.emit(attrs.asObject(licenseId, PresentationContext::class.java))
+                            val presentation = attributesServiceRepository.getActiveService().getStorageApi().getObjectByParentId(licenseId, PresentationContext::class.java)
+                            presentationContextStateFlow.emit(presentation)
                         }
                     }
             }

@@ -21,7 +21,7 @@ class ContentViewModel @Inject constructor(
         viewModelScope.launch {
             initialStoryObjectLiveData.value = ContentDataModel(
                 presentationContext = presentationContextRepository.getPresentationContext(),
-                testObject = testObjectRepository.getTestObject()
+                testObject = null//testObjectRepository.getTestObject()
             )
         }
         return initialStoryObjectLiveData

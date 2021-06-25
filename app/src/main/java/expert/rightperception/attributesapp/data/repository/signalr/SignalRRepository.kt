@@ -41,12 +41,16 @@ class SignalRRepository @Inject constructor(
     }
 
     private fun createConnector(license: LicenseModel) {
+        val map = mutableMapOf<String, AttributeDto>()
         val attributesEventSubscriber = EventsSubscriber1("OnAttributeChange", AttributeDto::class.java) { attribute ->
             try {
-                attributesServiceRepository
-                    .getActiveService()
-                    .getSynchronizationApi()
-                    .postApplyRemoteTask(listOf(attribute).withMappedType())
+                if (attribute != map[attribute.id]) {
+                    map[attribute.id] = attribute
+                    attributesServiceRepository
+                        .getActiveService()
+                        .getSynchronizationApi()
+                        .postApplyRemoteTask(listOf(attribute).withMappedType())
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
