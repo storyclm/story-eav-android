@@ -2,17 +2,15 @@ package expert.rightperception.attributesapp.ui.configurator.widget
 
 import android.content.Context
 import android.text.InputFilter
-import android.text.InputFilter.LengthFilter
 import android.text.InputType
-import android.text.method.DigitsKeyListener
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
+import com.redmadrobot.inputmask.MaskedTextChangedListener
 import com.redmadrobot.inputmask.MaskedTextChangedListener.Companion.installOn
-import com.redmadrobot.inputmask.MaskedTextChangedListener.ValueListener
 import expert.rightperception.attributesapp.R
 import expert.rightperception.attributesapp.ui.common.Utils
 import kotlinx.android.synthetic.main.dialog_edit.view.*
@@ -55,26 +53,35 @@ class NestedAttributeWidget(context: Context, attrs: AttributeSet?) : FrameLayou
                 when (valueType) {
                     0 -> {
                         val filterArray = arrayOfNulls<InputFilter>(1)
-                        filterArray[0] = LengthFilter(100)
+                        filterArray[0] = InputFilter.LengthFilter(100)
                         dialogView.dialog_edit_et.filters = filterArray
                     }
                     1 -> {
                         installOn(
                             dialogView.dialog_edit_et,
                             "#[______]",
-                            object : ValueListener {
+                            object : MaskedTextChangedListener.ValueListener {
                                 override fun onTextChanged(maskFilled: Boolean, extractedValue: String, formattedValue: String) {
                                     dialogView.dialog_edit_add_btn.isEnabled = Utils.colorRegex.matches(formattedValue)
                                 }
                             }
                         )
+                        dialogView.dialog_edit_et.inputType = InputType.TYPE_CLASS_TEXT
                         dialogView.dialog_edit_et.hint = "#ffffff"
-                        dialogView.dialog_edit_et.keyListener = DigitsKeyListener.getInstance("#0123456789abcdefABCDEF")
+                        val filterArray = arrayOfNulls<InputFilter>(1)
+                        filterArray[0] = InputFilter { source, start, end, dest, dstart, dend ->
+                            if (source.any { it !in "#0123456789abcdefABCDEF" }) {
+                                ""
+                            } else {
+                                null
+                            }
+                        }
+                        dialogView.dialog_edit_et.filters = filterArray
                     }
                     2 -> {
                         dialogView.dialog_edit_et.inputType = InputType.TYPE_CLASS_NUMBER
                         val filterArray = arrayOfNulls<InputFilter>(1)
-                        filterArray[0] = LengthFilter(2)
+                        filterArray[0] = InputFilter.LengthFilter(2)
                         dialogView.dialog_edit_et.filters = filterArray
                         dialogView.dialog_edit_et.addTextChangedListener {
                             dialogView.dialog_edit_add_btn.isEnabled = it.toString().isNotEmpty()

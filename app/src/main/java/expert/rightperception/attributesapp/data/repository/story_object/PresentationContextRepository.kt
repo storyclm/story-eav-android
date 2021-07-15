@@ -8,7 +8,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.breffi.story.domain.bridge.model.AppUpdatesProvider
 import ru.breffi.story.domain.bridge.model.ContentUpdatesReceiver
-import ru.rightperception.storyattributes.domain.model.AttributeModel
 import ru.rightperception.storyattributes.domain.model.ValidatedAttributeModel
 import ru.rightperception.storyattributes.utility.asObject
 import ru.rightperception.storyattributes.utility.get
@@ -128,13 +127,13 @@ class PresentationContextRepository @Inject constructor(
     }
 
     private fun setValue(pathKeys: List<String>, value: Any?) {
-        modifyAttribute(pathKeys) { validatedAttr ->
-            val attributeModel = AttributeModel(
-                key = validatedAttr.key,
-                parentId = validatedAttr.parentId,
-                value = value
-            )
-            attributesServiceRepository.getActiveService().getStorageApi().putAttributes(listOf(attributeModel))
+        launchInSequence {
+            withLicenseId { licenseId ->
+                val attrs = attributesServiceRepository.getActiveService().getStorageApi().getByParentId(licenseId)
+                set(licenseId, attrs, pathKeys, value)
+                val presentation = attributesServiceRepository.getActiveService().getStorageApi().getObjectByParentId(licenseId, PresentationContext::class.java)
+                presentationContextStateFlow.emit(presentation)
+            }
         }
     }
 

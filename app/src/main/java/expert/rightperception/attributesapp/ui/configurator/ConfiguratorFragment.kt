@@ -230,11 +230,11 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
             .map { (key, formItem) ->
                 FormItemUiModel(
                     key = key,
-                    name = formItem.name,
-                    backgroundColor = formItem.backgroundColor,
-                    fontColor = formItem.fontColor,
-                    fontSize = formItem.fontSize,
-                    inputValue = formItem.inputValue
+                    name = formItem.name ?: "",
+                    backgroundColor = formItem.backgroundColor ?: "#000000",
+                    fontColor = formItem.fontColor ?: "#000000",
+                    fontSize = formItem.fontSize ?: 10,
+                    inputValue = formItem.inputValue ?: ""
                 )
             }
         form_minus_item_btn.isEnabled = items.size > 1
@@ -287,7 +287,7 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
         dialogView.dialog_form_add_font_color_et.keyListener = DigitsKeyListener.getInstance("#0123456789abcdefABCDEF")
 
         fun updateAddButton() {
-            dialogView.dialog_form_add_add_btn.isEnabled =
+            dialogView.dialog_form_add_confirm_btn.isEnabled =
                 Utils.colorRegex.matches(dialogView.dialog_form_add_bg_color_et.text.toString())
                         && Utils.colorRegex.matches(dialogView.dialog_form_add_font_color_et.text.toString())
                         && dialogView.dialog_form_add_font_size_et.text.toString().isNotEmpty()
@@ -305,11 +305,12 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
         dialogView.dialog_form_add_cancel_btn.setOnClickListener {
             dialog.dismiss()
         }
-        dialogView.dialog_form_add_add_btn.setOnClickListener {
+        dialogView.dialog_form_add_confirm_btn.setOnClickListener {
             dialog.dismiss()
             objects?.let { objectsContainer ->
-                val order = objectsContainer.form.items.values
-                    .sortedByDescending { it.order }[0].order + 1
+                val order = objectsContainer.form.items.values.maxOfOrNull { it.order ?: 0 }
+                    ?.let { it + 1 }
+                    ?: 0
                 val key = "input_${order}"
                 val newFormItem = FormItem(
                     order = order,
