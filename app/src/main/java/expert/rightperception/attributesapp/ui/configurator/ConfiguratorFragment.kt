@@ -58,8 +58,7 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
 
         form_minus_item_btn.setOnClickListener {
             objects?.let { objectsContainer ->
-                val size = objectsContainer.form.items.values.size
-                if (size > 1) {
+                if (objectsContainer.form.items != null && objectsContainer.form.items.size > 1) {
                     val key = objectsContainer.form.items.entries
                         .sortedByDescending { it.value.order }[0].key
                     viewModel.deleteFormItem(configurator_endpoint_et.text.toString(), key)
@@ -225,7 +224,7 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
 
         form_visibility_aw.setValue(presentationContext.form.formVisible)
 
-        val items = presentationContext.form.items.entries
+        val items = (presentationContext.form.items?.entries ?: listOf())
             .sortedBy { it.value.order }
             .map { (key, formItem) ->
                 FormItemUiModel(
@@ -243,7 +242,7 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
 
     override fun onValueChange(uiModel: FormItemUiModel) {
         objects?.let { objectsContainer ->
-            objectsContainer.form.items[uiModel.key]?.copy(
+            objectsContainer.form.items?.get(uiModel.key)?.copy(
                 name = uiModel.name,
                 backgroundColor = uiModel.backgroundColor,
                 fontColor = uiModel.fontColor,
@@ -308,9 +307,9 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
         dialogView.dialog_form_add_confirm_btn.setOnClickListener {
             dialog.dismiss()
             objects?.let { objectsContainer ->
-                val order = objectsContainer.form.items.values.maxOfOrNull { it.order ?: 0 }
+                val order = objectsContainer.form.items?.values?.maxOfOrNull { it.order ?: 0 }
                     ?.let { it + 1 }
-                    ?: 0
+                    ?: 1
                 val key = "input_${order}"
                 val newFormItem = FormItem(
                     order = order,
@@ -320,7 +319,7 @@ class ConfiguratorFragment : InjectableFragment(), FormAdapter.Listener {
                     fontSize = dialogView.dialog_form_add_font_size_et.text.toString().toInt(),
                     inputValue = ""
                 )
-                val updatedMap = objectsContainer.form.items.plus(key to newFormItem)
+                val updatedMap = (objectsContainer.form.items ?: mapOf()).plus(key to newFormItem)
                 renderObjects(
                     objectsContainer.copy(form = objectsContainer.form.copy(items = updatedMap))
                 )

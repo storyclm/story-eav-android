@@ -2,7 +2,7 @@ package expert.rightperception.attributesapp.domain.model.objects
 
 data class FormObject(
     val formVisible: Boolean,
-    val items: Map<String, FormItem>
+    val items: Map<String, FormItem>?
 )
 
 data class FormItem(
