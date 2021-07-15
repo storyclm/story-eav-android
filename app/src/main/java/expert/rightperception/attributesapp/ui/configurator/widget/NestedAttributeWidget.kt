@@ -70,11 +70,7 @@ class NestedAttributeWidget(context: Context, attrs: AttributeSet?) : FrameLayou
                         dialogView.dialog_edit_et.hint = "#ffffff"
                         val filterArray = arrayOfNulls<InputFilter>(1)
                         filterArray[0] = InputFilter { source, start, end, dest, dstart, dend ->
-                            if (source.any { it !in "#0123456789abcdefABCDEF" }) {
-                                ""
-                            } else {
-                                null
-                            }
+                            source.filter { it in "#0123456789abcdefABCDEF" }
                         }
                         dialogView.dialog_edit_et.filters = filterArray
                     }
@@ -86,6 +82,24 @@ class NestedAttributeWidget(context: Context, attrs: AttributeSet?) : FrameLayou
                         dialogView.dialog_edit_et.addTextChangedListener {
                             dialogView.dialog_edit_add_btn.isEnabled = it.toString().isNotEmpty()
                         }
+                    }
+                    3 -> {
+                        installOn(
+                            dialogView.dialog_edit_et,
+                            "#[__]",
+                            object : MaskedTextChangedListener.ValueListener {
+                                override fun onTextChanged(maskFilled: Boolean, extractedValue: String, formattedValue: String) {
+                                    dialogView.dialog_edit_add_btn.isEnabled = Utils.hexRegex.matches(formattedValue)
+                                }
+                            }
+                        )
+                        dialogView.dialog_edit_et.inputType = InputType.TYPE_CLASS_TEXT
+                        dialogView.dialog_edit_et.hint = "#ff"
+                        val filterArray = arrayOfNulls<InputFilter>(1)
+                        filterArray[0] = InputFilter { source, start, end, dest, dstart, dend ->
+                            source.filter { it in "#0123456789abcdefABCDEF" }
+                        }
+                        dialogView.dialog_edit_et.filters = filterArray
                     }
                 }
                 dialogView.dialog_edit_et.setText(item_nested_attribute_value_tv.text)

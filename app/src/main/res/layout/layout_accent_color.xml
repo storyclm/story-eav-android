@@ -28,6 +28,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:key="transparent"
-        app:value_type="integer" />
+        app:value_type="hex" />
 
 </LinearLayout>
