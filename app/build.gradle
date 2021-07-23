@@ -14,7 +14,6 @@ for (file in project.rootDir.listFiles().sort()) {
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.2"
 
     defaultConfig {
         applicationId "expert.rightperception.attributesapp"
@@ -76,13 +75,10 @@ ext {
 dependencies {
 
     implementation 'com.github.storyclm:story-id-android:0.6.6'
-//    implementation('ru.breffi.story:storycontent:0.8.3@aar') {
-//        transitive = true
-//    }
-    implementation('ru.breffi.story:storycontent:test@aar') {
+    implementation('ru.breffi.story:storycontent:0.8.4@aar') {
         transitive = true
     }
-    implementation('expert.rightperception.story:storyattributes:0.5.12@aar') {
+    implementation('expert.rightperception.story:storyattributes:0.5.14@aar') {
         transitive = true
     }
 

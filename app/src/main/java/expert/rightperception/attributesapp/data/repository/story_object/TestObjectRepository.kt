@@ -59,7 +59,7 @@ class TestObjectRepository @Inject constructor(
                     val wrappedJsonObject = JsonObject().apply {
                         add(WRAPPER_KEY, jsonObject)
                     }
-                    attributesServiceRepository.getActiveService().getStorageApi().putJson(rootParentId, wrappedJsonObject)
+                    attributesServiceRepository.getActiveService().getStorageApi().putGoogleJson(rootParentId, wrappedJsonObject)
                     sendUpdate(rootParentId)
                 } catch (e: JsonSyntaxException) {
                     e.printStackTrace()
@@ -79,7 +79,7 @@ class TestObjectRepository @Inject constructor(
 
     suspend fun getTestObject(): JsonObject? {
         return withLicenseId { rootParentId ->
-            val element = attributesServiceRepository.getActiveService().getStorageApi().getJsonByParentId(rootParentId).get(WRAPPER_KEY)
+            val element = attributesServiceRepository.getActiveService().getStorageApi().getGoogleJsonByParentId(rootParentId).get(WRAPPER_KEY)
             if (element == null || element == JsonNull.INSTANCE) {
                 JsonObject()
             } else {
@@ -137,7 +137,7 @@ class TestObjectRepository @Inject constructor(
     }
 
     private suspend fun sendUpdate(rootParentId: String) {
-        val element = attributesServiceRepository.getActiveService().getStorageApi().getJsonByParentId(rootParentId).get(WRAPPER_KEY)
+        val element = attributesServiceRepository.getActiveService().getStorageApi().getGoogleJsonByParentId(rootParentId).get(WRAPPER_KEY)
         if (element != null && element != JsonNull.INSTANCE) {
             testObjectStateFlow.emit(element.asJsonObject)
         }
